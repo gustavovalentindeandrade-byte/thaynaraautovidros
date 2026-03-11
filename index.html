@@ -75,4 +75,304 @@
         .user-info { display: flex; align-items: center; gap: 15px; }
         .logo-box { text-align: right; line-height: 1.2; }
         .logo-box img { height: 40px; width: auto; border-radius: 4px; }
-        .logo-box sp
+        .logo-box span { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+
+        .content { padding: 2rem; overflow-y: auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+
+        /* --- COMPONENTES --- */
+        .card { background: var(--white); border-radius: 0.75rem; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; padding: 1rem; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); }
+        td { padding: 1rem; border-top: 1px solid var(--border); font-size: 0.95rem; }
+        tr:hover { background: #f1f5f9; }
+
+        .badge { padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+        .badge-stock { background: #dcfce7; color: #166534; }
+
+        .btn { 
+            display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.2rem; 
+            border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: 0.2s; border: none;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-icon { padding: 0.5rem; background: #f1f5f9; color: var(--text-main); }
+        .btn-icon:hover { background: var(--border); }
+        .btn-danger { color: var(--danger); }
+
+        /* --- MODAL --- */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content { 
+            background: white; width: 100%; max-width: 450px; border-radius: 1rem; 
+            padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+        }
+        .modal-header { margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; }
+        
+        label { display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 0.75rem; margin-bottom: 1.2rem; border: 1px solid var(--border); border-radius: 0.5rem;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Login -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-shield-halved"></i>
+                <h2>ERP System Pro</h2>
+                <p style="color: var(--text-muted)">Entre com suas credenciais</p>
+            </div>
+            <label>Usuário</label>
+            <input type="text" id="user" placeholder="Ex: admin">
+            <label>Senha</label>
+            <input type="password" id="pass" placeholder="••••••••">
+            <button onclick="handleLogin()">Acessar Sistema</button>
+            <p id="login-error" style="color: var(--danger); text-align: center; margin-top: 1rem; font-size: 0.85rem; display: none;">Usuário ou senha inválidos.</p>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="brand">
+            <i class="fas fa-cube fa-lg"></i>
+            <span>PRO CONTROLE</span>
+        </div>
+        
+        <div class="nav-link active" id="menu-estoque" onclick="showSection('estoque')">
+            <i class="fas fa-warehouse"></i> Estoque Central
+        </div>
+        <div class="nav-link" id="menu-funcionarios" onclick="showSection('funcionarios')">
+            <i class="fas fa-user-tie"></i> Equipe / RH
+        </div>
+
+        <div style="margin-top: auto;">
+            <div class="nav-link" onclick="location.reload()" style="color: #fca5a5;">
+                <i class="fas fa-right-from-bracket"></i> Sair
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main>
+        <header>
+            <div style="color: var(--text-muted); font-size: 0.9rem;">
+                Painel / <span id="breadcrumb" style="color: var(--text-main); font-weight: 600;">Estoque</span>
+            </div>
+            
+            <div class="user-info">
+                <div class="logo-box">
+                    <!-- LOGO DA EMPRESA -->
+                    <img src="https://via.placeholder.com/120x40/4f46e5/ffffff?text=SUA+LOGO" alt="Logo">
+                    <span>SUA EMPRESA LTDA</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Seção Estoque -->
+            <section id="sec-estoque">
+                <div class="page-header">
+                    <h2>Controle de Peças</h2>
+                    <button class="btn btn-primary" onclick="openModal('estoque')">
+                        <i class="fas fa-plus"></i> Adicionar Item
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item / Descrição</th>
+                                <th>Qtd. Atual</th>
+                                <th>Preço Unit.</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-estoque"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Seção Funcionários -->
+            <section id="sec-funcionarios" class="hidden">
+                <div class="page-header">
+                    <h2>Gestão de Funcionários</h2>
+                    <button class="btn btn-primary" onclick="openModal('funcionarios')">
+                        <i class="fas fa-user-plus"></i> Novo Cadastro
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome Completo</th>
+                                <th>Departamento / Cargo</th>
+                                <th>Data Cadastro</th>
+                                <th style="text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-funcionarios"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal Unificado -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-title">Título</div>
+            <input type="hidden" id="edit-index">
+            <input type="hidden" id="edit-type">
+            
+            <div id="form-fields"></div>
+
+            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveData()">Confirmar</button>
+                <button class="btn" style="background: #f1f5f9;" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados (LocalStorage)
+        let estoque = JSON.parse(localStorage.getItem('pro_estoque')) || [];
+        let funcionarios = JSON.parse(localStorage.getItem('pro_funcionarios')) || [];
+
+        // Login (Sessão temporária)
+        function handleLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            if(u === "admin" && p === "123") {
+                document.getElementById('login-overlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('login-overlay').style.display = 'none';
+                }, 300);
+                renderAll();
+            } else {
+                const err = document.getElementById('login-error');
+                err.style.display = 'block';
+                err.classList.add('shake');
+            }
+        }
+
+        // Navegação
+        function showSection(section) {
+            document.getElementById('sec-estoque').classList.toggle('hidden', section !== 'estoque');
+            document.getElementById('sec-funcionarios').classList.toggle('hidden', section !== 'funcionarios');
+            document.getElementById('breadcrumb').innerText = section === 'estoque' ? 'Estoque' : 'Funcionários';
+            
+            document.getElementById('menu-estoque').classList.toggle('active', section === 'estoque');
+            document.getElementById('menu-funcionarios').classList.toggle('active', section === 'funcionarios');
+        }
+
+        // Modais
+        function openModal(type, index = -1) {
+            const modal = document.getElementById('modal');
+            const fields = document.getElementById('form-fields');
+            document.getElementById('edit-index').value = index;
+            document.getElementById('edit-type').value = type;
+            fields.innerHTML = '';
+            
+            if(type === 'estoque') {
+                const item = index > -1 ? estoque[index] : {nome:'', qtd:'', preco:''};
+                document.getElementById('modal-title').innerText = index > -1 ? 'Editar Peça' : 'Nova Peça';
+                fields.innerHTML = `
+                    <label>Nome da Peça</label><input type="text" id="f1" value="${item.nome}">
+                    <label>Quantidade</label><input type="number" id="f2" value="${item.qtd}">
+                    <label>Preço Venda (R$)</label><input type="text" id="f3" value="${item.preco}">
+                `;
+            } else {
+                const f = index > -1 ? funcionarios[index] : {nome:'', cargo:''};
+                document.getElementById('modal-title').innerText = index > -1 ? 'Editar Funcionário' : 'Novo Funcionário';
+                fields.innerHTML = `
+                    <label>Nome Completo</label><input type="text" id="f1" value="${f.nome}">
+                    <label>Cargo / Função</label><input type="text" id="f2" value="${f.cargo}">
+                `;
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        // CRUD
+        function saveData() {
+            const type = document.getElementById('edit-type').value;
+            const index = parseInt(document.getElementById('edit-index').value);
+            const v1 = document.getElementById('f1').value;
+            const v2 = document.getElementById('f2').value;
+            const v3 = document.getElementById('f3') ? document.getElementById('f3').value : '';
+
+            if(!v1 || !v2) return alert("Preencha os campos obrigatórios!");
+
+            if(type === 'estoque') {
+                const item = { nome: v1, qtd: v2, preco: v3 };
+                if(index > -1) estoque[index] = item;
+                else estoque.push(item);
+                localStorage.setItem('pro_estoque', JSON.stringify(estoque));
+            } else {
+                const func = { nome: v1, cargo: v2, data: new Date().toLocaleDateString() };
+                if(index > -1) funcionarios[index] = func;
+                else funcionarios.push(func);
+                localStorage.setItem('pro_funcionarios', JSON.stringify(funcionarios));
+            }
+            
+            closeModal();
+            renderAll();
+        }
+
+        function deleteItem(type, index) {
+            if(confirm("Deseja realmente excluir este registro?")) {
+                if(type === 'estoque') {
+                    estoque.splice(index, 1);
+                    localStorage.setItem('pro_estoque', JSON.stringify(estoque));
+                } else {
+                    funcionarios.splice(index, 1);
+                    localStorage.setItem('pro_funcionarios', JSON.stringify(funcionarios));
+                }
+                renderAll();
+            }
+        }
+
+        function renderAll() {
+            const tEstoque = document.getElementById('tbody-estoque');
+            tEstoque.innerHTML = estoque.map((item, i) => `
+                <tr>
+                    <td><strong>${item.nome}</strong></td>
+                    <td>${item.qtd} un</td>
+                    <td>R$ ${item.preco}</td>
+                    <td><span class="badge badge-stock">Disponível</span></td>
+                    <td style="text-align: right;">
+                        <button class="btn-icon" onclick="openModal('estoque', ${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon btn-danger" onclick="deleteItem('estoque', ${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            const tFunc = document.getElementById('tbody-funcionarios');
+            tFunc.innerHTML = funcionarios.map((f, i) => `
+                <tr>
+                    <td><strong>${f.nome}</strong></td>
+                    <td>${f.cargo}</td>
+                    <td style="color: var(--text-muted)">${f.data || '---'}</td>
+                    <td style="text-align: right;">
+                        <button class="btn-icon" onclick="openModal('funcionarios', ${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon btn-danger" onclick="deleteItem('funcionarios', ${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
