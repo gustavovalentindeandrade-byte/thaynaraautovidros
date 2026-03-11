@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thaynara Auto Vidros - Gestão 13.0</title>
+    <title>Thaynara Auto Vidros - Gestão Pro 13.5</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js carregado com segurança -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -35,7 +34,7 @@
         nav { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px 0; }
         .nav-logo { text-align: center; padding: 0 10px 20px 10px; border-bottom: 1px solid #374151; margin-bottom: 10px; }
         .nav-logo img { width: 100px; margin-bottom: 10px; }
-        .nav-logo h3 { font-size: 16px; color: white; }
+        .nav-logo h3 { font-size: 16px; color: white; letter-spacing: 1px; }
 
         .menu-item { padding: 12px 25px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; color: #d1d5db; font-size: 14px; }
         .menu-item:hover, .menu-item.active { background: #374151; color: white; border-left: 4px solid var(--secondary); }
@@ -68,21 +67,16 @@
         /* MODAL */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 5000; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
-        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
+        .modal-content label { display: block; margin-top: 12px; font-weight: bold; font-size: 13px; }
+        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 6px; }
 
         .os-box { background: #f0f7ff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #d1e2f5; }
         .hidden { display: none !important; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
-        }
     </style>
 </head>
 <body>
 
-    <!-- Login -->
+    <!-- Login Blindado -->
     <div id="login-overlay">
         <div class="login-box">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/140x90?text=LOGO'">
@@ -90,12 +84,12 @@
             <input type="text" id="loginUser" placeholder="Usuário (admin)">
             <input type="password" id="loginPass" placeholder="Senha (123)">
             <button onclick="handleLogin()">Acessar Sistema</button>
-            <p id="login-error" style="color:red; display:none; margin-top:10px; font-weight: bold;">Usuário ou senha incorretos!</p>
-            <a href="#" onclick="limparSistema()" style="display:block; margin-top:20px; font-size:11px; color:#999;">Limpar Erros do Sistema</a>
+            <p id="login-error" style="color:red; display:none; margin-top:10px; font-weight: bold;">Credenciais incorretas!</p>
+            <a href="#" onclick="limparSistema()" style="display:block; margin-top:20px; font-size:11px; color:#999;">Limpar Erros do Sistema (Reset)</a>
         </div>
     </div>
 
-    <!-- Sidebar -->
+    <!-- Sidebar com Logo e Nome -->
     <nav id="sidebar">
         <div class="nav-logo">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/100x70?text=LOGO'">
@@ -105,7 +99,7 @@
         <div class="menu-item" onclick="showSection('ordem', this)"><i class="fas fa-file-invoice-dollar"></i> Ordens de Serviço</div>
         <div class="menu-item" onclick="showSection('clientes', this)"><i class="fas fa-users"></i> Clientes</div>
         <div class="menu-item" onclick="showSection('funcionarios', this)"><i class="fas fa-user-tie"></i> Funcionários</div>
-        <div class="menu-item" onclick="showSection('servicos', this)"><i class="fas fa-wrench"></i> Serviços</div>
+        <div class="menu-item" onclick="showSection('servicos', this)"><i class="fas fa-screwdriver-wrench"></i> Serviços</div>
         <div class="menu-item" onclick="showSection('estoque', this)"><i class="fas fa-boxes"></i> Estoque</div>
         <div class="menu-item" onclick="showSection('usuarios', this)"><i class="fas fa-user-shield"></i> Usuários</div>
         
@@ -114,12 +108,12 @@
         </div>
     </nav>
 
-    <!-- Main -->
+    <!-- Main Content -->
     <main>
         <header>
             <h2 id="page-title">Dashboard</h2>
-            <div style="font-weight: bold; color: var(--primary)">
-                <i class="fas fa-user-circle"></i> <span id="userNameDisplay">Usuário</span>
+            <div style="font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-user-circle fa-lg"></i> Bem-vindo, <span id="userNameDisplay">Usuário</span>
             </div>
         </header>
 
@@ -131,6 +125,7 @@
                     <div class="card"><h3>Total Clientes</h3><p id="dash-cli-count">0</p></div>
                 </div>
                 <div class="card">
+                    <h4>Vendas (R$)</h4>
                     <canvas id="vendasChart" height="100"></canvas>
                 </div>
             </section>
@@ -147,7 +142,7 @@
         </div>
     </main>
 
-    <!-- Modal -->
+    <!-- Modal Form -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <h2 id="modal-title">Cadastro</h2>
@@ -160,18 +155,16 @@
     </div>
 
     <script>
-        // INICIALIZAÇÃO SEGURA DO BANCO
+        // INICIALIZAÇÃO SEGURA DO BANCO (V13.5)
         function getDB() {
             const defaults = {
                 clientes: [], funcionarios: [], servicos: [], estoque: [], ordens: [],
                 usuarios: [{nome: "Administrador", user: "admin", pass: "123"}]
             };
             try {
-                const stored = localStorage.getItem('th_db_v13');
+                const stored = localStorage.getItem('th_db_v13_5');
                 return stored ? JSON.parse(stored) : defaults;
-            } catch (e) {
-                return defaults;
-            }
+            } catch (e) { return defaults; }
         }
 
         let db = getDB();
@@ -183,23 +176,20 @@
         function handleLogin() {
             const u = document.getElementById('loginUser').value.trim();
             const p = document.getElementById('loginPass').value.trim();
-            
             const user = db.usuarios.find(x => x.user === u && x.pass === p);
             
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('userNameDisplay').innerText = user.nome;
-                // Timeout para garantir que o DOM renderizou antes de carregar o dashboard
                 setTimeout(updateDashboard, 100);
             } else {
-                const err = document.getElementById('login-error');
-                err.style.display = 'block';
-                setTimeout(() => err.style.display = 'none', 3000);
+                document.getElementById('login-error').style.display = 'block';
+                setTimeout(() => document.getElementById('login-error').style.display = 'none', 3000);
             }
         }
 
         function limparSistema() {
-            if(confirm("Isso limpará todo o histórico para corrigir erros. Continuar?")) {
+            if(confirm("Deseja resetar o sistema para corrigir erros? Todos os dados serão apagados.")) {
                 localStorage.clear();
                 location.reload();
             }
@@ -210,7 +200,6 @@
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             el.classList.add('active');
             document.getElementById('page-title').innerText = el.innerText;
-            
             document.getElementById('sec-dashboard').classList.add('hidden');
             document.getElementById('sec-tabelas').classList.add('hidden');
 
@@ -231,8 +220,8 @@
             const configs = {
                 clientes: { h: ['Nome', 'Telefone', 'Endereço'], f: ['nome', 'tel', 'endereco'] },
                 funcionarios: { h: ['Nome', 'Telefone', 'Função'], f: ['nome', 'tel', 'funcao'] },
-                servicos: { h: ['Serviço', 'Valor'], f: ['nome', 'preco'] },
-                estoque: { h: ['Peça', 'Marca', 'Preço'], f: ['nome', 'marca', 'preco'] },
+                servicos: { h: ['Serviço', 'Preço'], f: ['nome', 'preco'] },
+                estoque: { h: ['Peça', 'Marca', 'Qtd', 'Preço'], f: ['nome', 'marca', 'qtd', 'preco'] },
                 ordem: { h: ['ID', 'Cliente', 'Resumo', 'Total'], f: ['id', 'cliente', 'resumo', 'total'] },
                 usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
             };
@@ -243,122 +232,4 @@
             db[currentSection].forEach((item, i) => {
                 const tr = document.createElement('tr');
                 let botoes = `<button class="btn btn-edit" onclick="openModal(${i})"><i class="fas fa-edit"></i></button>`;
-                if(currentSection === 'ordem') botoes = `<button class="btn btn-print" onclick="imprimirRecibo(${i})"><i class="fas fa-print"></i></button>` + botoes;
-                botoes += `<button class="btn btn-del" onclick="deleteItem(${i})"><i class="fas fa-trash"></i></button>`;
-                
-                tr.innerHTML = cfg.f.map(field => `<td>${item[field] || '-'}</td>`).join('') + `<td>${botoes}</td>`;
-                body.appendChild(tr);
-            });
-        }
-
-        function openModal(index = null) {
-            editIndex = index;
-            const fields = document.getElementById('modal-fields');
-            fields.innerHTML = '';
-            document.getElementById('modal').style.display = 'flex';
-            const data = index !== null ? db[currentSection][index] : {};
-
-            if(currentSection === 'clientes') {
-                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Telefone</label><input id="f2" value="${data.tel||''}"> <label>Endereço</label><input id="f3" value="${data.endereco||''}">`;
-            } else if(currentSection === 'funcionarios') {
-                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Telefone</label><input id="f2" value="${data.tel||''}"> <label>Função</label><input id="f3" value="${data.funcao||''}">`;
-            } else if(currentSection === 'servicos') {
-                fields.innerHTML = `<label>Serviço</label><input id="f1" value="${data.nome||''}"> <label>Preço M.O.</label><input id="f2" type="number" value="${data.preco||''}">`;
-            } else if(currentSection === 'estoque') {
-                fields.innerHTML = `<label>Peça</label><input id="f1" value="${data.nome||''}"> <label>Marca</label><input id="f2" value="${data.marca||''}"> <label>Preço</label><input id="f3" type="number" value="${data.preco||''}">`;
-            } else if(currentSection === 'usuarios') {
-                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Login</label><input id="f2" value="${data.user||''}"> <label>Senha</label><input id="f3" type="password" value="${data.pass||''}">`;
-            } else if(currentSection === 'ordem') {
-                const cliOpt = db.clientes.map(c => `<option>${c.nome}</option>`).join('');
-                const pecOpt = db.estoque.map(p => `<option value="${p.preco}">${p.nome} (R$ ${p.preco})</option>`).join('');
-                const serOpt = db.servicos.map(s => `<option value="${s.preco}">${s.nome} (R$ ${s.preco})</option>`).join('');
-                
-                fields.innerHTML = `
-                    <label>Cliente</label><select id="f1">${cliOpt}</select>
-                    <label>Veículo</label><input id="f2" value="${data.veiculo||''}">
-                    <div class="os-box">
-                        <label><input type="checkbox" id="usePeça" onchange="calcTotal()"> Incluir Peça</label>
-                        <select id="selPeça" onchange="calcTotal()">${pecOpt}</select>
-                        <label><input type="checkbox" id="useMao" onchange="calcTotal()"> Incluir Mão de Obra</label>
-                        <select id="selServ" onchange="calcTotal()">${serOpt}</select>
-                    </div>
-                    <h3 style="margin-top:15px">Total: R$ <span id="displayTotal">0,00</span></h3>
-                    <input type="hidden" id="fTotal" value="0">
-                `;
-            }
-        }
-
-        function calcTotal() {
-            let t = 0;
-            if(document.getElementById('usePeça')?.checked) t += parseFloat(document.getElementById('selPeça').value || 0);
-            if(document.getElementById('useMao')?.checked) t += parseFloat(document.getElementById('selServ').value || 0);
-            document.getElementById('displayTotal').innerText = t.toFixed(2);
-            document.getElementById('fTotal').value = t.toFixed(2);
-        }
-
-        function handleSave() {
-            const v = (id) => document.getElementById(id)?.value;
-            let obj = {};
-
-            if(currentSection === 'clientes') obj = {nome:v('f1'), tel:v('f2'), endereco:v('f3')};
-            else if(currentSection === 'funcionarios') obj = {nome:v('f1'), tel:v('f2'), funcao:v('f3')};
-            else if(currentSection === 'servicos') obj = {nome:v('f1'), preco:v('f2')};
-            else if(currentSection === 'estoque') obj = {nome:v('f1'), marca:v('f2'), preco:v('f3')};
-            else if(currentSection === 'usuarios') obj = {nome:v('f1'), user:v('f2'), pass:v('f3')};
-            else if(currentSection === 'ordem') {
-                const p = document.getElementById('usePeça').checked ? document.getElementById('selPeça').options[document.getElementById('selPeça').selectedIndex].text.split(' (')[0] : "";
-                const s = document.getElementById('useMao').checked ? document.getElementById('selServ').options[document.getElementById('selServ').selectedIndex].text.split(' (')[0] : "";
-                obj = { id: Date.now().toString().slice(-5), cliente: v('f1'), veiculo: v('f2'), total: v('fTotal'), resumo: (p+" "+s).trim(), data: new Date().toLocaleDateString() };
-            }
-
-            if(editIndex !== null) db[currentSection][editIndex] = obj;
-            else db[currentSection].push(obj);
-
-            localStorage.setItem('th_db_v13', JSON.stringify(db));
-            closeModal();
-            renderTable();
-            if(currentSection === 'ordem') updateDashboard();
-        }
-
-        function deleteItem(i) {
-            if(confirm("Excluir?")) {
-                db[currentSection].splice(i, 1);
-                localStorage.setItem('th_db_v13', JSON.stringify(db));
-                renderTable();
-            }
-        }
-
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-
-        function updateDashboard() {
-            const total = db.ordens.reduce((a, b) => a + parseFloat(b.total || 0), 0);
-            document.getElementById('dash-faturamento').innerText = `R$ ${total.toFixed(2)}`;
-            document.getElementById('dash-os-count').innerText = db.ordens.length;
-            document.getElementById('dash-cli-count').innerText = db.clientes.length;
-
-            const canvas = document.getElementById('vendasChart');
-            if(!canvas) return;
-
-            try {
-                if(chartInstance) chartInstance.destroy();
-                chartInstance = new Chart(canvas.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: db.ordens.slice(-5).map(o => o.id),
-                        datasets: [{ label: 'Vendas (R$)', data: db.ordens.slice(-5).map(o => o.total), backgroundColor: '#3b82f6' }]
-                    },
-                    options: { responsive: true }
-                });
-            } catch (e) { console.log("Erro ao carregar gráfico"); }
-        }
-
-        function imprimirRecibo(i) {
-            const os = db.ordens[i];
-            const w = window.open('', '', 'width=800,height=600');
-            w.document.write(`<html><head><title>Recibo</title><style>body{font-family:sans-serif;padding:40px;border:2px solid #000} .h{text-align:center;border-bottom:1px solid #000}</style></head><body><div class="h"><h1>THAYNARA AUTO VIDROS</h1><p>Recibo OS Nº ${os.id}</p></div><p><strong>Cliente:</strong> ${os.cliente}</p><p><strong>Veículo:</strong> ${os.veiculo}</p><p><strong>Serviço:</strong> ${os.resumo}</p><h2>Total: R$ ${parseFloat(os.total).toFixed(2)}</h2></body></html>`);
-            w.document.close();
-            w.print();
-        }
-    </script>
-</body>
-</html>
+                if(
