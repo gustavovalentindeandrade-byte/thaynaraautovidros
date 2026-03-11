@@ -3,359 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP Pro - Gestão de Estoque</title>
-    <!-- Fontes e Ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <title>Sistema de Controle - Loja</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-main: #f8fafc;
-            --bg-sidebar: #0f172a;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --light-bg: #f4f7f6;
             --white: #ffffff;
-            --border: #e2e8f0;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-        body { background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        body { background-color: var(--light-bg); display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- TELA DE LOGIN PROFISSIONAL --- */
+        /* --- LOGIN SCREEN --- */
         #login-overlay {
-            position: fixed; inset: 0; background: #0f172a; 
-            display: flex; justify-content: center; align-items: center; z-index: 9999;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary-color); display: flex; justify-content: center;
+            align-items: center; z-index: 1000;
         }
-        .login-card {
-            background: var(--white); padding: 2.5rem; border-radius: 1rem;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 100%; max-width: 400px;
+        .login-box {
+            background: var(--white); padding: 40px; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 350px; text-align: center;
         }
-        .login-header { text-align: center; margin-bottom: 2rem; }
-        .login-header i { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; }
-        .login-card input {
-            width: 100%; padding: 0.8rem; margin-bottom: 1rem;
-            border: 1px solid var(--border); border-radius: 0.5rem; outline: none; transition: 0.2s;
+        .login-box h2 { margin-bottom: 20px; color: var(--primary-color); }
+        .login-box input {
+            width: 100%; padding: 12px; margin: 10px 0;
+            border: 1px solid #ddd; border-radius: 4px;
         }
-        .login-card input:focus { border-color: var(--primary); ring: 2px var(--primary); }
-        .login-card button {
-            width: 100%; padding: 0.8rem; background: var(--primary); color: white;
-            border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: 0.3s;
+        .login-box button {
+            width: 100%; padding: 12px; background: var(--secondary-color);
+            color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
         }
-        .login-card button:hover { background: var(--primary-hover); }
 
         /* --- SIDEBAR --- */
-        aside {
-            width: 260px; background: var(--bg-sidebar); color: white;
-            display: flex; flex-direction: column; padding: 1.5rem;
+        nav {
+            width: 250px; background: var(--primary-color); color: white;
+            padding: 20px; display: flex; flex-direction: column;
         }
-        .brand { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; margin-bottom: 2.5rem; color: #fff; }
-        .brand i { color: var(--primary); }
+        nav h2 { margin-bottom: 30px; font-size: 1.2rem; text-align: center; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        nav .menu-item {
+            padding: 15px; cursor: pointer; transition: 0.3s; border-radius: 4px; margin-bottom: 5px;
+        }
+        nav .menu-item:hover, nav .menu-item.active { background: var(--secondary-color); }
+        nav i { margin-right: 10px; }
+
+        /* --- MAIN CONTENT --- */
+        main { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
         
-        .nav-link {
-            display: flex; align-items: center; gap: 12px; padding: 0.8rem 1rem;
-            color: #94a3b8; text-decoration: none; border-radius: 0.5rem;
-            margin-bottom: 0.5rem; transition: 0.3s; cursor: pointer;
-        }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: #fff; }
-        .nav-link.active i { color: var(--primary); }
-
-        /* --- ÁREA PRINCIPAL --- */
-        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
+        /* Cabeçalho com Logo */
         header {
-            height: 70px; background: var(--white); border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 30px; background: var(--white); padding: 20px; border-radius: 8px;
         }
-        .user-info { display: flex; align-items: center; gap: 15px; }
-        .logo-box { text-align: right; line-height: 1.2; }
-        .logo-box img { height: 40px; width: auto; border-radius: 4px; }
-        .logo-box span { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
-
-        .content { padding: 2rem; overflow-y: auto; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-
-        /* --- COMPONENTES --- */
-        .card { background: var(--white); border-radius: 0.75rem; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .logo-container { text-align: right; }
+        .logo-container img { width: 100px; height: auto; display: block; margin-bottom: 5px; border-radius: 5px;}
         
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f8fafc; padding: 1rem; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); }
-        td { padding: 1rem; border-top: 1px solid var(--border); font-size: 0.95rem; }
-        tr:hover { background: #f1f5f9; }
+        .card { background: var(--white); padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        
+        h3 { margin-bottom: 20px; color: var(--primary-color); }
 
-        .badge { padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
-        .badge-stock { background: #dcfce7; color: #166534; }
+        /* --- TABLES --- */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table th, table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        table th { background: #f8f9fa; }
 
-        .btn { 
-            display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.2rem; 
-            border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: 0.2s; border: none;
-        }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-icon { padding: 0.5rem; background: #f1f5f9; color: var(--text-main); }
-        .btn-icon:hover { background: var(--border); }
-        .btn-danger { color: var(--danger); }
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; margin-right: 5px; color: white; }
+        .btn-add { background: var(--success-color); margin-bottom: 15px; }
+        .btn-edit { background: var(--secondary-color); }
+        .btn-delete { background: var(--danger-color); }
+        .btn-logout { background: transparent; color: #ff7675; cursor: pointer; margin-top: auto; border: 1px solid #ff7675; }
 
-        /* --- MODAL --- */
+        /* --- FORM MODAL --- */
         .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
-            display: none; justify-content: center; align-items: center; z-index: 1000;
-            backdrop-filter: blur(4px);
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
         }
-        .modal-content { 
-            background: white; width: 100%; max-width: 450px; border-radius: 1rem; 
-            padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
-        }
-        .modal-header { margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; }
-        
-        label { display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
-        input[type="text"], input[type="number"] {
-            width: 100%; padding: 0.75rem; margin-bottom: 1.2rem; border: 1px solid var(--border); border-radius: 0.5rem;
-        }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; width: 400px; }
+        .modal-content input { width: 100%; padding: 10px; margin: 10px 0; }
 
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Login -->
+    <!-- Tela de Login -->
     <div id="login-overlay">
-        <div class="login-card">
-            <div class="login-header">
-                <i class="fas fa-shield-halved"></i>
-                <h2>ERP System Pro</h2>
-                <p style="color: var(--text-muted)">Entre com suas credenciais</p>
-            </div>
-            <label>Usuário</label>
-            <input type="text" id="user" placeholder="Ex: admin">
-            <label>Senha</label>
-            <input type="password" id="pass" placeholder="••••••••">
-            <button onclick="handleLogin()">Acessar Sistema</button>
-            <p id="login-error" style="color: var(--danger); text-align: center; margin-top: 1rem; font-size: 0.85rem; display: none;">Usuário ou senha inválidos.</p>
+        <div class="login-box">
+            <i class="fas fa-lock fa-3x" style="color: #3498db; margin-bottom: 15px;"></i>
+            <h2>Acesso ao Sistema</h2>
+            <input type="text" id="user" placeholder="Usuário">
+            <input type="password" id="pass" placeholder="Senha">
+            <button onclick="handleLogin()">Entrar</button>
+            <p id="login-error" style="color: red; font-size: 0.8rem; margin-top: 10px; display: none;">Dados incorretos!</p>
         </div>
     </div>
 
     <!-- Sidebar -->
-    <aside>
-        <div class="brand">
-            <i class="fas fa-cube fa-lg"></i>
-            <span>PRO CONTROLE</span>
-        </div>
-        
-        <div class="nav-link active" id="menu-estoque" onclick="showSection('estoque')">
-            <i class="fas fa-warehouse"></i> Estoque Central
-        </div>
-        <div class="nav-link" id="menu-funcionarios" onclick="showSection('funcionarios')">
-            <i class="fas fa-user-tie"></i> Equipe / RH
-        </div>
+    <nav>
+        <h2>LOJA CONTROLE</h2>
+        <div class="menu-item active" onclick="showSection('estoque')"><i class="fas fa-boxes"></i> Estoque</div>
+        <div class="menu-item" onclick="showSection('funcionarios')"><i class="fas fa-users"></i> Funcionários</div>
+        <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </nav>
 
-        <div style="margin-top: auto;">
-            <div class="nav-link" onclick="location.reload()" style="color: #fca5a5;">
-                <i class="fas fa-right-from-bracket"></i> Sair
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main -->
+    <!-- Conteúdo Principal -->
     <main>
         <header>
-            <div style="color: var(--text-muted); font-size: 0.9rem;">
-                Painel / <span id="breadcrumb" style="color: var(--text-main); font-weight: 600;">Estoque</span>
+            <div>
+                <h1 id="page-title">Gerenciamento de Estoque</h1>
+                <p>Bem-vindo ao painel administrativo.</p>
             </div>
-            
-            <div class="user-info">
-                <div class="logo-box">
-                    <!-- LOGO DA EMPRESA -->
-                    <img src="https://via.placeholder.com/120x40/4f46e5/ffffff?text=SUA+LOGO" alt="Logo">
-                    <span>SUA EMPRESA LTDA</span>
-                </div>
+            <div class="logo-container">
+                <!-- SUBSTITUA A URL ABAIXO PELA URL DA SUA IMAGEM -->
+                <img src="https://via.placeholder.com/100x50?text=SUA+LOGO" alt="Logo Empresa">
+                <strong>Nome da Empresa</strong>
             </div>
         </header>
 
-        <div class="content">
-            <!-- Seção Estoque -->
-            <section id="sec-estoque">
-                <div class="page-header">
-                    <h2>Controle de Peças</h2>
-                    <button class="btn btn-primary" onclick="openModal('estoque')">
-                        <i class="fas fa-plus"></i> Adicionar Item
-                    </button>
-                </div>
-                
-                <div class="card">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item / Descrição</th>
-                                <th>Qtd. Atual</th>
-                                <th>Preço Unit.</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-estoque"></tbody>
-                    </table>
-                </div>
-            </section>
+        <!-- Seção Estoque -->
+        <section id="sec-estoque" class="card">
+            <button class="btn btn-add" onclick="openModal('estoque')"><i class="fas fa-plus"></i> Novo Produto</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço (R$)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-estoque"></tbody>
+            </table>
+        </section>
 
-            <!-- Seção Funcionários -->
-            <section id="sec-funcionarios" class="hidden">
-                <div class="page-header">
-                    <h2>Gestão de Funcionários</h2>
-                    <button class="btn btn-primary" onclick="openModal('funcionarios')">
-                        <i class="fas fa-user-plus"></i> Novo Cadastro
-                    </button>
-                </div>
-                
-                <div class="card">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nome Completo</th>
-                                <th>Departamento / Cargo</th>
-                                <th>Data Cadastro</th>
-                                <th style="text-align: right;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-funcionarios"></tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
+        <!-- Seção Funcionários -->
+        <section id="sec-funcionarios" class="card hidden">
+            <button class="btn btn-add" onclick="openModal('funcionarios')"><i class="fas fa-user-plus"></i> Novo Funcionário</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Cargo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-funcionarios"></tbody>
+            </table>
+        </section>
     </main>
 
-    <!-- Modal Unificado -->
+    <!-- Modal Genérico para Cadastro/Edição -->
     <div id="modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header" id="modal-title">Título</div>
+            <h3 id="modal-title">Cadastro</h3>
             <input type="hidden" id="edit-index">
             <input type="hidden" id="edit-type">
-            
             <div id="form-fields"></div>
-
-            <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                <button class="btn btn-primary" style="flex: 1;" onclick="saveData()">Confirmar</button>
-                <button class="btn" style="background: #f1f5f9;" onclick="closeModal()">Cancelar</button>
-            </div>
+            <button class="btn btn-add" style="width: 100%;" onclick="saveData()">Salvar</button>
+            <button class="btn btn-delete" style="width: 100%; margin-top: 10px;" onclick="closeModal()">Cancelar</button>
         </div>
     </div>
 
     <script>
-        // Dados (LocalStorage)
-        let estoque = JSON.parse(localStorage.getItem('pro_estoque')) || [];
-        let funcionarios = JSON.parse(localStorage.getItem('pro_funcionarios')) || [];
+        // Dados Iniciais (Carrega do LocalStorage ou inicia vazio)
+        let estoque = JSON.parse(localStorage.getItem('estoque')) || [];
+        let funcionarios = JSON.parse(localStorage.getItem('funcionarios')) || [];
 
-        // Login (Sessão temporária)
+        // LOGIN SIMPLIFICADO (Segurança básica de front-end)
         function handleLogin() {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
             if(u === "admin" && p === "123") {
-                document.getElementById('login-overlay').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('login-overlay').style.display = 'none';
-                }, 300);
+                document.getElementById('login-overlay').style.display = 'none';
                 renderAll();
             } else {
-                const err = document.getElementById('login-error');
-                err.style.display = 'block';
-                err.classList.add('shake');
+                document.getElementById('login-error').style.display = 'block';
             }
         }
 
-        // Navegação
+        function logout() { location.reload(); }
+
+        // NAVEGAÇÃO
         function showSection(section) {
-            document.getElementById('sec-estoque').classList.toggle('hidden', section !== 'estoque');
-            document.getElementById('sec-funcionarios').classList.toggle('hidden', section !== 'funcionarios');
-            document.getElementById('breadcrumb').innerText = section === 'estoque' ? 'Estoque' : 'Funcionários';
-            
-            document.getElementById('menu-estoque').classList.toggle('active', section === 'estoque');
-            document.getElementById('menu-funcionarios').classList.toggle('active', section === 'funcionarios');
+            document.getElementById('sec-estoque').classList.add('hidden');
+            document.getElementById('sec-funcionarios').classList.add('hidden');
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+
+            if(section === 'estoque') {
+                document.getElementById('sec-estoque').classList.remove('hidden');
+                document.getElementById('page-title').innerText = "Gerenciamento de Estoque";
+                event.currentTarget.classList.add('active');
+            } else {
+                document.getElementById('sec-funcionarios').classList.remove('hidden');
+                document.getElementById('page-title').innerText = "Gestão de Funcionários";
+                event.currentTarget.classList.add('active');
+            }
         }
 
-        // Modais
+        // MODAL LOGIC
         function openModal(type, index = -1) {
             const modal = document.getElementById('modal');
             const fields = document.getElementById('form-fields');
             document.getElementById('edit-index').value = index;
             document.getElementById('edit-type').value = type;
             fields.innerHTML = '';
-            
+            modal.style.display = 'flex';
+
             if(type === 'estoque') {
-                const item = index > -1 ? estoque[index] : {nome:'', qtd:'', preco:''};
-                document.getElementById('modal-title').innerText = index > -1 ? 'Editar Peça' : 'Nova Peça';
+                document.getElementById('modal-title').innerText = index > -1 ? "Editar Produto" : "Novo Produto";
+                const item = index > -1 ? estoque[index] : {nome: '', qtd: '', preco: ''};
                 fields.innerHTML = `
-                    <label>Nome da Peça</label><input type="text" id="f1" value="${item.nome}">
-                    <label>Quantidade</label><input type="number" id="f2" value="${item.qtd}">
-                    <label>Preço Venda (R$)</label><input type="text" id="f3" value="${item.preco}">
+                    <input type="text" id="f1" placeholder="Nome do Produto" value="${item.nome}">
+                    <input type="number" id="f2" placeholder="Quantidade" value="${item.qtd}">
+                    <input type="text" id="f3" placeholder="Preço" value="${item.preco}">
                 `;
             } else {
-                const f = index > -1 ? funcionarios[index] : {nome:'', cargo:''};
-                document.getElementById('modal-title').innerText = index > -1 ? 'Editar Funcionário' : 'Novo Funcionário';
+                document.getElementById('modal-title').innerText = index > -1 ? "Editar Funcionário" : "Novo Funcionário";
+                const func = index > -1 ? funcionarios[index] : {nome: '', cargo: ''};
                 fields.innerHTML = `
-                    <label>Nome Completo</label><input type="text" id="f1" value="${f.nome}">
-                    <label>Cargo / Função</label><input type="text" id="f2" value="${f.cargo}">
+                    <input type="text" id="f1" placeholder="Nome Completo" value="${func.nome}">
+                    <input type="text" id="f2" placeholder="Cargo" value="${func.cargo}">
                 `;
             }
-            modal.style.display = 'flex';
         }
 
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        // CRUD
+        // SALVAR DADOS
         function saveData() {
             const type = document.getElementById('edit-type').value;
-            const index = parseInt(document.getElementById('edit-index').value);
-            const v1 = document.getElementById('f1').value;
-            const v2 = document.getElementById('f2').value;
-            const v3 = document.getElementById('f3') ? document.getElementById('f3').value : '';
-
-            if(!v1 || !v2) return alert("Preencha os campos obrigatórios!");
+            const index = document.getElementById('edit-index').value;
+            const f1 = document.getElementById('f1').value;
+            const f2 = document.getElementById('f2').value;
+            const f3 = document.getElementById('f3') ? document.getElementById('f3').value : null;
 
             if(type === 'estoque') {
-                const item = { nome: v1, qtd: v2, preco: v3 };
-                if(index > -1) estoque[index] = item;
-                else estoque.push(item);
-                localStorage.setItem('pro_estoque', JSON.stringify(estoque));
+                const obj = { nome: f1, qtd: f2, preco: f3 };
+                if(index > -1) estoque[index] = obj;
+                else estoque.push(obj);
+                localStorage.setItem('estoque', JSON.stringify(estoque));
             } else {
-                const func = { nome: v1, cargo: v2, data: new Date().toLocaleDateString() };
-                if(index > -1) funcionarios[index] = func;
-                else funcionarios.push(func);
-                localStorage.setItem('pro_funcionarios', JSON.stringify(funcionarios));
+                const obj = { nome: f1, cargo: f2 };
+                if(index > -1) funcionarios[index] = obj;
+                else funcionarios.push(obj);
+                localStorage.setItem('funcionarios', JSON.stringify(funcionarios));
             }
-            
             closeModal();
             renderAll();
         }
 
+        // EXCLUIR
         function deleteItem(type, index) {
-            if(confirm("Deseja realmente excluir este registro?")) {
+            if(confirm("Tem certeza que deseja excluir?")) {
                 if(type === 'estoque') {
                     estoque.splice(index, 1);
-                    localStorage.setItem('pro_estoque', JSON.stringify(estoque));
+                    localStorage.setItem('estoque', JSON.stringify(estoque));
                 } else {
                     funcionarios.splice(index, 1);
-                    localStorage.setItem('pro_funcionarios', JSON.stringify(funcionarios));
+                    localStorage.setItem('funcionarios', JSON.stringify(funcionarios));
                 }
                 renderAll();
             }
         }
 
+        // RENDERIZAR TABELAS
         function renderAll() {
             const tEstoque = document.getElementById('tbody-estoque');
             tEstoque.innerHTML = estoque.map((item, i) => `
                 <tr>
-                    <td><strong>${item.nome}</strong></td>
-                    <td>${item.qtd} un</td>
+                    <td>${item.nome}</td>
+                    <td>${item.qtd}</td>
                     <td>R$ ${item.preco}</td>
-                    <td><span class="badge badge-stock">Disponível</span></td>
-                    <td style="text-align: right;">
-                        <button class="btn-icon" onclick="openModal('estoque', ${i})"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon btn-danger" onclick="deleteItem('estoque', ${i})"><i class="fas fa-trash"></i></button>
+                    <td>
+                        <button class="btn btn-edit" onclick="openModal('estoque', ${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-delete" onclick="deleteItem('estoque', ${i})"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -363,12 +288,11 @@
             const tFunc = document.getElementById('tbody-funcionarios');
             tFunc.innerHTML = funcionarios.map((f, i) => `
                 <tr>
-                    <td><strong>${f.nome}</strong></td>
+                    <td>${f.nome}</td>
                     <td>${f.cargo}</td>
-                    <td style="color: var(--text-muted)">${f.data || '---'}</td>
-                    <td style="text-align: right;">
-                        <button class="btn-icon" onclick="openModal('funcionarios', ${i})"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon btn-danger" onclick="deleteItem('funcionarios', ${i})"><i class="fas fa-trash"></i></button>
+                    <td>
+                        <button class="btn btn-edit" onclick="openModal('funcionarios', ${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-delete" onclick="deleteItem('funcionarios', ${i})"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
