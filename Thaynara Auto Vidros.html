@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Thaynara Auto Vidros - Sistema 8.0</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#eef1f5}
+.login{height:100vh;display:flex;justify-content:center;align-items:center;flex-direction:column}
+.login input{padding:10px;margin:6px;width:220px}
+.sidebar{width:240px;height:100vh;background:#1f2937;color:white;position:fixed}
+.sidebar h2{text-align:center;padding:18px;font-size:18px}
+.sidebar button{width:100%;border:none;background:none;color:white;padding:14px;text-align:left;cursor:pointer}
+.sidebar button:hover{background:#374151}
+.main{margin-left:240px;padding:30px}
+.tela{display:none}
+.cards{display:flex;gap:20px;margin-bottom:25px;flex-wrap:wrap}
+.card{background:white;padding:20px;border-radius:10px;width:200px;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
+input,select{padding:8px;margin:5px}
+.logo{width:130px;margin-bottom:10px}
+.lista{background:white;padding:15px;border-radius:8px;margin-top:10px}
+button{padding:8px 12px;margin:4px;cursor:pointer}
+.busca{margin-bottom:10px;padding:8px;width:250px}
+.admin{margin-top:20px;font-size:12px;color:#666;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<div id="loginTela" class="login">
+<img src="logo.png" class="logo">
+<h2>Thaynara Auto Vidros</h2>
+
+<input id="loginUser" placeholder="Usuário">
+<input id="loginPass" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+
+<div class="admin" onclick="mostrarCriar()">Acesso administrativo</div>
+
+<div id="criarUser" style="display:none">
+<h4>Criar usuário</h4>
+<input id="novoNome" placeholder="Nome">
+<input id="novoUser" placeholder="Login">
+<input id="novoPass" placeholder="Senha">
+<button onclick="criarUsuario()">Criar</button>
+</div>
+
+<p style="margin-top:30px;font-size:12px">
+Feito por: Gustavo Valentin de Andrade | Contato: 21 98733-4408
+</p>
+</div>
+
+<div id="sistema" style="display:none">
+
+<div class="sidebar">
+<h2>Thaynara Auto Vidros</h2>
+<button onclick="abrir('dashboard')">Dashboard</button>
+<button onclick="abrir('clientes')">Clientes</button>
+<button onclick="abrir('funcionarios')">Funcionários</button>
+<button onclick="abrir('estoque')">Estoque</button>
+<button onclick="abrir('ordem')">Ordem de Serviço</button>
+<button onclick="abrir('financeiro')">Financeiro</button>
+<button onclick="abrir('relatorios')">Relatórios</button>
+<button onclick="backup()">Backup</button>
+<button onclick="logout()">Sair</button>
+</div>
+
+<div class="main">
+
+<div id="dashboard" class="tela">
+<img src="logo.png" class="logo">
+<h2 id="boasvindas"></h2>
+
+<div class="cards">
+<div class="card"><h3>Faturamento</h3><p id="fatTotal">0</p></div>
+<div class="card"><h3>Ordens</h3><p id="ordTotal">0</p></div>
+<div class="card"><h3>Clientes</h3><p id="cliTotal">0</p></div>
+<div class="card"><h3>Estoque baixo</h3><p id="estoqueBaixo">0</p></div>
+</div>
+
+<canvas id="graficoFat"></canvas>
+</div>
+
+<div id="clientes" class="tela">
+<h2>Clientes</h2>
+
+<input class="busca" placeholder="Pesquisar cliente" onkeyup="buscarCliente(this.value)">
+
+<input id="cNome" placeholder="Nome">
+<input id="cApelido" placeholder="Apelido">
+<input id="cTel" placeholder="Telefone">
+<input id="cEnd" placeholder="Endereço">
+<input id="cCpf" placeholder="CPF">
+<input id="cRg" placeholder="RG">
+<input id="cEstadoCivil" placeholder="Estado civil">
+
+<button onclick="salvarCliente()">Salvar</button>
+
+<div class="lista"><ul id="listaClientes"></ul></div>
+</div>
+
+<div id="funcionarios" class="tela">
+<h2>Funcionários</h2>
+
+<input class="busca" placeholder="Pesquisar funcionário" onkeyup="buscarFuncionario(this.value)">
+
+<input id="fNome" placeholder="Nome">
+<input id="fTel" placeholder="Telefone">
+<input id="fEnd" placeholder="Endereço">
+<input id="fMae" placeholder="Nome da mãe">
+<input id="fPai" placeholder="Nome do pai">
+<input id="fEstadoCivil" placeholder="Estado civil">
+<input id="fFuncao" placeholder="Função">
+
+<button onclick="salvarFuncionario()">Salvar</button>
+
+<div class="lista"><ul id="listaFuncionarios"></ul></div>
+</div>
+
+<div id="estoque" class="tela">
+<h2>Estoque</h2>
+
+<input class="busca" placeholder="Pesquisar peça" onkeyup="buscarPeca(this.value)">
+
+<input id="pNome" placeholder="Peça">
+<input id="pMarca" placeholder="Marca veículo">
+<input id="pModelo" placeholder="Modelo veículo">
+<input id="pQtd" placeholder="Quantidade">
+<input id="pCompra" placeholder="Valor compra">
+<input id="pVenda" placeholder="Valor venda">
+
+<button onclick="salvarPeca()">Salvar</button>
+
+<div class="lista"><ul id="listaPecas"></ul></div>
+</div>
+
+<div id="ordem" class="tela">
+<h2>Ordem de Serviço</h2>
+
+<select id="oCliente"></select>
+<select id="oFuncionario"></select>
+
+<input id="oMarca" placeholder="Marca veículo">
+<input id="oModelo" placeholder="Modelo veículo">
+<input id="oData" type="date">
+<input id="oPeca" placeholder="Peça utilizada">
+<input id="oValor" placeholder="Valor">
+
+<button onclick="salvarOrdem()">Salvar</button>
+
+<div class="lista"><ul id="listaOrdens"></ul></div>
+</div>
+
+<div id="financeiro" class="tela">
+<h2>Financeiro</h2>
+
+<input id="finDesc" placeholder="Descrição">
+<input id="finValor" placeholder="Valor">
+
+<select id="finTipo">
+<option value="entrada">Entrada</option>
+<option value="saida">Saída</option>
+</select>
+
+<button onclick="salvarMov()">Salvar</button>
+
+<div class="lista"><ul id="listaFinanceiro"></ul></div>
+</div>
+
+<div id="relatorios" class="tela">
+<h2>Relatórios</h2>
+
+<button onclick="relatorioFinanceiro()">Financeiro PDF</button>
+<button onclick="relatorioClientes()">Clientes PDF</button>
+<button onclick="relatorioOS()">Ordem de Serviço PDF</button>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+let clientes=JSON.parse(localStorage.getItem("clientes")||"[]")
+let funcionarios=JSON.parse(localStorage.getItem("funcionarios")||"[]")
+let pecas=JSON.parse(localStorage.getItem("pecas")||"[]")
+let ordens=JSON.parse(localStorage.getItem("ordens")||"[]")
+let financeiro=JSON.parse(localStorage.getItem("financeiro")||"[]")
+
+function salvarTudo(){
+localStorage.setItem("clientes",JSON.stringify(clientes))
+localStorage.setItem("funcionarios",JSON.stringify(funcionarios))
+localStorage.setItem("pecas",JSON.stringify(pecas))
+localStorage.setItem("ordens",JSON.stringify(ordens))
+localStorage.setItem("financeiro",JSON.stringify(financeiro))
+}
+
+function mostrarCriar(){criarUser.style.display="block"}
+
+function criarUsuario(){
+let users=JSON.parse(localStorage.getItem("users")||"[]")
+users.push({nome:novoNome.value,user:novoUser.value,pass:novoPass.value})
+localStorage.setItem("users",JSON.stringify(users))
+alert("Usuário criado")
+}
+
+function login(){
+let users=JSON.parse(localStorage.getItem("users")||"[]")
+let u=loginUser.value
+let p=loginPass.value
+let ok=users.find(x=>x.user===u && x.pass===p)
+
+if(!ok){alert("Login inválido");return}
+
+loginTela.style.display="none"
+sistema.style.display="block"
+boasvindas.innerText="Bem vindo "+ok.nome
+
+atualizarDashboard()
+carregarSelects()
+}
+
+function logout(){location.reload()}
+
+function abrir(id){
+document.querySelectorAll(".tela").forEach(t=>t.style.display="none")
+document.getElementById(id).style.display="block"
+}
+
+function salvarCliente(){
+clientes.push({nome:cNome.value,apelido:cApelido.value,tel:cTel.value,end:cEnd.value,cpf:cCpf.value,rg:cRg.value,estado:cEstadoCivil.value})
+salvarTudo();listar();carregarSelects()
+}
+
+function salvarFuncionario(){
+funcionarios.push({nome:fNome.value,tel:fTel.value,end:fEnd.value,mae:fMae.value,pai:fPai.value,estado:fEstadoCivil.value,funcao:fFuncao.value})
+salvarTudo();listar();carregarSelects()
+}
+
+function salvarPeca(){
+pecas.push({nome:pNome.value,marca:pMarca.value,modelo:pModelo.value,qtd:parseInt(pQtd.value),compra:pCompra.value,venda:pVenda.value})
+salvarTudo();listar()
+}
+
+function salvarOrdem(){
+ordens.push({cliente:oCliente.value,func:oFuncionario.value,marca:oMarca.value,modelo:oModelo.value,data:oData.value,peca:oPeca.value,valor:parseFloat(oValor.value)})
+
+financeiro.push({tipo:"entrada",valor:parseFloat(oValor.value),descricao:"Ordem de serviço"})
+
+let peca=pecas.find(p=>p.nome===oPeca.value)
+if(peca){peca.qtd--}
+
+salvarTudo();listar();atualizarDashboard()
+}
+
+function salvarMov(){
+financeiro.push({tipo:finTipo.value,valor:parseFloat(finValor.value),descricao:finDesc.value})
+salvarTudo();listar();atualizarDashboard()
+}
+
+function listar(){
+
+listaClientes.innerHTML=""
+clientes.forEach((c,i)=>{
+listaClientes.innerHTML+=`<li>${c.nome} <button onclick="excluirCliente(${i})">Excluir</button></li>`
+})
+
+listaFuncionarios.innerHTML=""
+funcionarios.forEach((f,i)=>{
+listaFuncionarios.innerHTML+=`<li>${f.nome} <button onclick="excluirFuncionario(${i})">Excluir</button></li>`
+})
+
+listaPecas.innerHTML=""
+pecas.forEach(p=>{
+listaPecas.innerHTML+=`<li>${p.nome} - ${p.qtd}</li>`
+})
+
+listaOrdens.innerHTML=""
+ordens.forEach(o=>{
+listaOrdens.innerHTML+=`<li>${o.cliente} - ${o.marca} ${o.modelo} - R$${o.valor}</li>`
+})
+
+listaFinanceiro.innerHTML=""
+financeiro.forEach(f=>{
+listaFinanceiro.innerHTML+=`<li>${f.tipo} - R$${f.valor}</li>`
+})
+
+}
+
+function excluirCliente(i){clientes.splice(i,1);salvarTudo();listar()}
+function excluirFuncionario(i){funcionarios.splice(i,1);salvarTudo();listar()}
+
+function buscarCliente(nome){
+listaClientes.innerHTML=""
+clientes.filter(c=>c.nome.toLowerCase().includes(nome.toLowerCase())).forEach(c=>{
+listaClientes.innerHTML+=`<li>${c.nome}</li>`
+})
+}
+
+function buscarFuncionario(nome){
+listaFuncionarios.innerHTML=""
+funcionarios.filter(f=>f.nome.toLowerCase().includes(nome.toLowerCase())).forEach(f=>{
+listaFuncionarios.innerHTML+=`<li>${f.nome}</li>`
+})
+}
+
+function buscarPeca(nome){
+listaPecas.innerHTML=""
+pecas.filter(p=>p.nome.toLowerCase().includes(nome.toLowerCase())).forEach(p=>{
+listaPecas.innerHTML+=`<li>${p.nome} - ${p.qtd}</li>`
+})
+}
+
+function atualizarDashboard(){
+let fat=0
+financeiro.forEach(f=>{if(f.tipo==="entrada")fat+=f.valor})
+
+fatTotal.innerText="R$ "+fat
+ordTotal.innerText=ordens.length
+cliTotal.innerText=clientes.length
+
+let baixo=pecas.filter(p=>p.qtd<5).length
+estoqueBaixo.innerText=baixo
+
+let ctx=document.getElementById("graficoFat")
+new Chart(ctx,{type:'bar',data:{labels:['Faturamento'],datasets:[{data:[fat]}]}})
+}
+
+function carregarSelects(){
+
+oCliente.innerHTML=""
+clientes.forEach(c=>{oCliente.innerHTML+=`<option>${c.nome}</option>`})
+
+oFuncionario.innerHTML=""
+funcionarios.forEach(f=>{oFuncionario.innerHTML+=`<option>${f.nome}</option>`})
+}
+
+function relatorioFinanceiro(){
+const { jsPDF } = window.jspdf
+let doc=new jsPDF()
+
+doc.text("Relatório Financeiro",10,10)
+
+let y=20
+financeiro.forEach(f=>{doc.text(f.tipo+" R$"+f.valor,10,y);y+=10})
+
+doc.save("financeiro.pdf")
+}
+
+function relatorioClientes(){
+const { jsPDF } = window.jspdf
+let doc=new jsPDF()
+
+doc.text("Relatório Clientes",10,10)
+
+let y=20
+clientes.forEach(c=>{doc.text(c.nome,10,y);y+=10})
+
+doc.save("clientes.pdf")
+}
+
+function relatorioOS(){
+const { jsPDF } = window.jspdf
+let doc=new jsPDF()
+
+doc.text("Ordens de Serviço",10,10)
+
+let y=20
+ordens.forEach(o=>{doc.text(o.cliente+" - R$"+o.valor,10,y);y+=10})
+
+doc.save("ordens.pdf")
+}
+
+function backup(){
+let dados={clientes,funcionarios,pecas,ordens,financeiro}
+let dataStr="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(dados))
+let dl=document.createElement('a')
+dl.setAttribute("href",dataStr)
+dl.setAttribute("download","backup_sistema.json")
+dl.click()
+}
+
+listar()
+
+</script>
+
+</body>
+</html>
