@@ -87,15 +87,21 @@
         .chart-box { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .chart-box h4 { margin-bottom: 20px; font-size: 16px; color: #475569; }
 
-        .alert { padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        /* --- ALERTAS --- */
+        .alert-area { margin-bottom: 25px; }
+        .alert { padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
         .alert-danger { background: #fee2e2; color: #b91c1c; border-left: 6px solid var(--danger); }
         .alert-warning { background: #ffedd5; color: #9a3412; border-left: 6px solid var(--warning); }
 
         /* --- TABELAS --- */
-        .action-bar { background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .action-bar { 
+            background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; 
+            display: flex; justify-content: space-between; align-items: center; gap: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
         .search-box { position: relative; flex: 1; max-width: 400px; }
         .search-box i { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
-        .search-box input { width: 100%; padding: 10px 10px 10px 45px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; }
+        .search-box input { width: 100%; padding: 10px 10px 10px 45px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; }
 
         .table-container { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -180,7 +186,7 @@
                 <div class="action-bar">
                     <div class="search-box"><i class="fas fa-search"></i><input type="text" id="mainSearch" placeholder="Pesquisar..." onkeyup="filtrarTabela()"></div>
                     <div style="display:flex; gap:10px">
-                        <button class="btn btn-pdf" onclick="exportarListaPDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                        <button class="btn btn-pdf" onclick="exportarListaPDF()"><i class="fas fa-file-pdf"></i> Exportar Lista</button>
                         <button class="btn btn-add" onclick="openModal()"><i class="fas fa-plus"></i> Novo Registro</button>
                     </div>
                 </div>
@@ -201,6 +207,7 @@
     </div>
 
     <script>
+        // --- BANCO DE DADOS ---
         let db = {
             clientes: JSON.parse(localStorage.getItem('th_cli_v16') || '[]'),
             funcionarios: JSON.parse(localStorage.getItem('th_func_v16') || '[]'),
@@ -316,7 +323,7 @@
             if(ft) ft.value = total.toFixed(2);
         }
 
-        // --- FUNÇÃO DE SALVAMENTO CORRIGIDA ---
+        // --- FUNÇÃO DE SALVAMENTO CORRIGIDA (OS ANALISADA) ---
         function handleSave() {
             const v = (id) => {
                 const el = document.getElementById(id);
@@ -325,6 +332,7 @@
             
             let obj = {};
 
+            // Mapeamento de coleções
             if(currentSection === 'clientes') {
                 obj = {nome: v('f1'), cpf: v('f2'), rg: v('f3'), tel: v('f4'), endereco: v('f5')};
             } else if(currentSection === 'funcionarios') {
@@ -336,14 +344,13 @@
             } else if(currentSection === 'usuarios') {
                 obj = {nome: v('f1'), user: v('f2'), pass: v('f3')};
             } else if(currentSection === 'ordem') {
-                // Captura segura dos selects da OS
                 const sMarca = document.getElementById('selMarca');
                 const sModelo = document.getElementById('selModelo');
                 const sServ = document.getElementById('selServ');
 
-                // Validação de texto selecionado
-                const txtModelo = (sModelo && sModelo.selectedIndex >= 0) ? sModelo.options[sModelo.selectedIndex].text.split(' (')[0] : "";
-                const txtServ = (sServ && sServ.selectedIndex >= 0) ? sServ.options[sServ.selectedIndex].text.split(' (')[0] : "";
+                // Validação de segurança para evitar crash
+                const valModelo = (sModelo && sModelo.selectedIndex > 0) ? sModelo.options[sModelo.selectedIndex].text.split(' (')[0] : "Não informado";
+                const valServ = (sServ && sServ.selectedIndex > 0) ? sServ.options[sServ.selectedIndex].text.split(' (')[0] : "Nenhum";
 
                 obj = {
                     id: editIndex !== null ? db.ordens[editIndex].id : "OS" + Math.floor(1000 + Math.random() * 9000),
@@ -352,22 +359,28 @@
                     mecanico: v('fMec'),
                     veiculo: v('f2'),
                     marca_peca: sMarca ? sMarca.value : "",
-                    modelo_peca: txtModelo,
-                    servico: txtServ,
-                    total: parseFloat(v('fTotal')) || 0
+                    modelo_peca: valModelo,
+                    servico: valServ,
+                    total: parseFloat(document.getElementById('fTotal').value) || 0
                 };
 
-                // Baixa estoque (apenas novos registros)
-                if(editIndex === null && obj.modelo_peca !== "" && obj.modelo_peca !== "Selecione o modelo...") {
+                // Baixa de estoque apenas para NOVAS Ordens
+                if(editIndex === null && obj.marca_peca !== "" && valModelo !== "Não informado") {
                     let itemEst = db.estoque.find(e => e.marca === obj.marca_peca && e.modelo === obj.modelo_peca);
-                    if(itemEst && itemEst.qtd > 0) itemEst.qtd--;
+                    if(itemEst && itemEst.qtd > 0) {
+                        itemEst.qtd--;
+                    }
                 }
             }
 
-            // Salva no Banco Local
-            if(editIndex !== null) db[currentSection][editIndex] = obj;
-            else db[currentSection].push(obj);
+            // Inserção no Array
+            if(editIndex !== null) {
+                db[currentSection][editIndex] = obj;
+            } else {
+                db[currentSection].push(obj);
+            }
 
+            // Persistência em "Banco de Dados" (LocalStorage)
             saveAll();
             closeModal();
             renderTable();
@@ -410,25 +423,24 @@
                     alertBox.innerHTML += `<div class="alert alert-${tipo}"><i class="fas fa-triangle-exclamation"></i> ${msg}</div>`;
                 });
             }
-            renderTopPecas(); renderTopServicos(); renderTopMecanicos();
+            renderCharts();
         }
 
-        function renderTopPecas() {
-            const counts = {};
-            db.ordens.forEach(o => { if(o.modelo_peca && o.modelo_peca !== "Selecione o modelo...") counts[o.modelo_peca] = (counts[o.modelo_peca] || 0) + 1 });
-            initChart('chartPecas', counts, 'Unidades', '#f59e0b');
-        }
+        function renderCharts() {
+            // Gráfico Peças
+            const pCounts = {};
+            db.ordens.forEach(o => { if(o.modelo_peca !== "Não informado") pCounts[o.modelo_peca] = (pCounts[o.modelo_peca] || 0) + 1 });
+            initChart('chartPecas', pCounts, 'Unidades', '#f59e0b');
 
-        function renderTopServicos() {
-            const counts = {};
-            db.ordens.forEach(o => { if(o.servico && o.servico !== "Nenhum serviço...") counts[o.servico] = (counts[o.servico] || 0) + 1 });
-            initChart('chartServicos', counts, 'Execuções', '#3b82f6');
-        }
+            // Gráfico Serviços
+            const sCounts = {};
+            db.ordens.forEach(o => { if(o.servico !== "Nenhum") sCounts[o.servico] = (sCounts[o.servico] || 0) + 1 });
+            initChart('chartServicos', sCounts, 'Execuções', '#3b82f6');
 
-        function renderTopMecanicos() {
-            const counts = {};
-            db.ordens.forEach(o => { counts[o.mecanico] = (counts[o.mecanico] || 0) + 1 });
-            initChart('chartMecanicos', counts, 'Serviços', '#10b981');
+            // Gráfico Mecânicos
+            const mCounts = {};
+            db.ordens.forEach(o => { mCounts[o.mecanico] = (mCounts[o.mecanico] || 0) + 1 });
+            initChart('chartMecanicos', mCounts, 'Serviços', '#10b981');
         }
 
         function initChart(id, dataObj, label, color) {
@@ -442,14 +454,14 @@
                     labels: Object.keys(dataObj),
                     datasets: [{ label: label, data: Object.values(dataObj), backgroundColor: color, borderRadius: 5 }]
                 },
-                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
         }
 
         function exportarListaPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text(`Relatorio de ${currentSection.toUpperCase()}`, 14, 15);
+            doc.text(`Relatório de ${currentSection.toUpperCase()}`, 14, 15);
             if(db[currentSection].length > 0){
                 const columns = Object.keys(db[currentSection][0]);
                 const rows = db[currentSection].map(item => Object.values(item));
@@ -465,19 +477,19 @@
             doc.setFontSize(22);
             doc.text("THAYNARA AUTO VIDROS", 105, 20, {align: 'center'});
             doc.setFontSize(10);
-            doc.text("Comprovante de Ordem de Servico", 105, 28, {align: 'center'});
+            doc.text("Comprovante de Ordem de Serviço", 105, 28, {align: 'center'});
             doc.line(20, 35, 190, 35);
             doc.setFontSize(12);
-            doc.text(`O.S. Numero: ${os.id}`, 20, 45);
+            doc.text(`O.S. Número: ${os.id}`, 20, 45);
             doc.text(`Data: ${os.data}`, 150, 45);
             doc.text(`Cliente: ${os.cliente}`, 20, 55);
-            doc.text(`Veiculo: ${os.veiculo}`, 20, 65);
-            doc.text(`Mecanico: ${os.mecanico}`, 20, 75);
+            doc.text(`Veículo: ${os.veiculo}`, 20, 65);
+            doc.text(`Mecânico: ${os.mecanico}`, 20, 75);
             doc.rect(20, 85, 170, 40);
-            doc.text("Descricao dos Servicos/Pecas:", 25, 95);
+            doc.text("Descrição dos Serviços/Peças:", 25, 95);
             doc.setFontSize(10);
-            doc.text(`- Peca: ${os.marca_peca || ''} ${os.modelo_peca || ''}`, 30, 105);
-            doc.text(`- Servico: ${os.servico || ''}`, 30, 115);
+            doc.text(`- Peça: ${os.marca_peca || ''} ${os.modelo_peca || ''}`, 30, 105);
+            doc.text(`- Serviço: ${os.servico || ''}`, 30, 115);
             doc.setFontSize(16);
             doc.text(`VALOR TOTAL: R$ ${parseFloat(os.total).toFixed(2)}`, 190, 140, {align: 'right'});
             doc.save(`OS_${os.id}.pdf`);
