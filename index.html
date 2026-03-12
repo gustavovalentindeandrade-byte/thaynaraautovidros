@@ -25,7 +25,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         body { background: var(--bg-light); display: flex; height: 100vh; overflow: hidden; color: #1e2937; }
 
-        /* --- TELA DE LOGIN MODERNA --- */
+        /* --- TELA DE LOGIN --- */
         #login-overlay { 
             position: fixed; inset: 0; 
             background: linear-gradient(135deg, #0f172a 0%, #1e2937 100%);
@@ -87,29 +87,20 @@
         .chart-box { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .chart-box h4 { margin-bottom: 20px; font-size: 16px; color: #475569; }
 
-        /* --- ALERTAS --- */
-        .alert-area { margin-bottom: 25px; }
-        .alert { padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
+        .alert { padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
         .alert-danger { background: #fee2e2; color: #b91c1c; border-left: 6px solid var(--danger); }
         .alert-warning { background: #ffedd5; color: #9a3412; border-left: 6px solid var(--warning); }
-        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* --- TABELAS E BUSCA --- */
-        .action-bar { 
-            background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; 
-            display: flex; justify-content: space-between; align-items: center; gap: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
+        /* --- TABELAS --- */
+        .action-bar { background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
         .search-box { position: relative; flex: 1; max-width: 400px; }
         .search-box i { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
-        .search-box input { width: 100%; padding: 10px 10px 10px 45px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; }
-        .search-box input:focus { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .search-box input { width: 100%; padding: 10px 10px 10px 45px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; }
 
         .table-container { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th { background: #f8fafc; text-align: left; padding: 16px; color: #64748b; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
         td { padding: 16px; border-bottom: 1px solid #f1f5f9; }
-        tr:hover { background: #f8fafc; }
 
         /* --- BOTÕES --- */
         .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
@@ -118,7 +109,6 @@
         .btn-edit { background: #e2e8f0; color: #475569; }
         .btn-del { background: #fee2e2; color: #b91c1c; }
         .btn-pdf { background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
-        .btn:hover { filter: brightness(0.9); transform: translateY(-1px); }
 
         /* --- MODAL --- */
         .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 5000; backdrop-filter: blur(4px); }
@@ -128,13 +118,11 @@
         .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
 
         .os-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f1f5f9; padding: 20px; border-radius: 12px; margin-top: 20px; }
-
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Tela de Login -->
     <div id="login-overlay">
         <div class="login-box">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/150x100?text=Thaynara+Logo'">
@@ -147,7 +135,6 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
     <nav>
         <div class="nav-logo">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/100x70?text=LOGO'">
@@ -160,14 +147,11 @@
         <div class="menu-item" onclick="showSection('servicos', this)"><i class="fas fa-screwdriver-wrench"></i> Serviços</div>
         <div class="menu-item" onclick="showSection('estoque', this)"><i class="fas fa-boxes-stacked"></i> Estoque (Modelos)</div>
         <div class="menu-item" onclick="showSection('usuarios', this)"><i class="fas fa-shield-halved"></i> Gestão de Usuários</div>
-        
         <div style="margin-top: auto; padding: 0 20px;">
-            <button class="btn btn-pdf" onclick="window.print()" style="width: 100%; margin-bottom: 10px;"><i class="fas fa-print"></i> Imprimir Tela</button>
             <div class="menu-item" onclick="location.reload()" style="color: #fb7185;"><i class="fas fa-right-from-bracket"></i> Sair</div>
         </div>
     </nav>
 
-    <!-- Main -->
     <main>
         <header>
             <h2 id="page-title">Dashboard</h2>
@@ -177,57 +161,34 @@
         </header>
 
         <div class="container">
-            <!-- Dashboard -->
             <section id="sec-dashboard">
                 <div class="alert-area" id="estoque-alertas"></div>
-
                 <div class="stats-grid">
                     <div class="stat-card"><h3>Faturamento Bruto</h3><p id="dash-faturamento">R$ 0,00</p></div>
                     <div class="stat-card"><h3>OS Realizadas</h3><p id="dash-os-count">0</p></div>
                     <div class="stat-card"><h3>Clientes na Base</h3><p id="dash-cli-count">0</p></div>
                     <div class="stat-card"><h3>Estoque Crítico</h3><p id="dash-est-critico" style="color:var(--danger)">0</p></div>
                 </div>
-
                 <div class="charts-container">
-                    <div class="chart-box">
-                        <h4><i class="fas fa-trophy" style="color:var(--warning)"></i> Peças (Modelos) Mais Vendidos</h4>
-                        <canvas id="chartPecas"></canvas>
-                    </div>
-                    <div class="chart-box">
-                        <h4><i class="fas fa-gears" style="color:var(--secondary)"></i> Serviços Mais Realizados</h4>
-                        <canvas id="chartServicos"></canvas>
-                    </div>
-                    <div class="chart-box">
-                        <h4><i class="fas fa-user-check" style="color:var(--success)"></i> Top Mecânicos (Serviços)</h4>
-                        <canvas id="chartMecanicos"></canvas>
-                    </div>
+                    <div class="chart-box"><h4>Peças Mais Vendidas</h4><canvas id="chartPecas"></canvas></div>
+                    <div class="chart-box"><h4>Serviços Mais Realizados</h4><canvas id="chartServicos"></canvas></div>
+                    <div class="chart-box"><h4>Top Mecânicos</h4><canvas id="chartMecanicos"></canvas></div>
                 </div>
             </section>
 
-            <!-- Seções de Tabelas -->
             <section id="sec-tabelas" class="hidden">
                 <div class="action-bar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="mainSearch" placeholder="Pesquisar..." onkeyup="filtrarTabela()">
-                    </div>
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="mainSearch" placeholder="Pesquisar..." onkeyup="filtrarTabela()"></div>
                     <div style="display:flex; gap:10px">
                         <button class="btn btn-pdf" onclick="exportarListaPDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
                         <button class="btn btn-add" onclick="openModal()"><i class="fas fa-plus"></i> Novo Registro</button>
                     </div>
                 </div>
-
-                <div class="table-container">
-                    <table id="data-table">
-                        <thead id="table-head"></thead>
-                        <tbody id="table-body"></tbody>
-                    </table>
-                </div>
+                <div class="table-container"><table><thead id="table-head"></thead><tbody id="table-body"></tbody></table></div>
             </section>
         </div>
     </main>
 
-    <!-- Modal Form -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <h2 id="modal-title">Cadastro</h2>
@@ -240,7 +201,6 @@
     </div>
 
     <script>
-        // --- BANCO DE DADOS ---
         let db = {
             clientes: JSON.parse(localStorage.getItem('th_cli_v16') || '[]'),
             funcionarios: JSON.parse(localStorage.getItem('th_func_v16') || '[]'),
@@ -254,12 +214,10 @@
         let editIndex = null;
         let chartRefs = {};
 
-        // --- LOGIN ---
         function handleLogin() {
             const u = document.getElementById('loginUser').value;
             const p = document.getElementById('loginPass').value;
             const user = db.usuarios.find(x => x.user === u && x.pass === p);
-            
             if(user) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('welcomeName').innerText = user.nome;
@@ -270,16 +228,13 @@
             }
         }
 
-        // --- NAVEGAÇÃO ---
         function showSection(sec, el) {
             currentSection = sec;
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             el.classList.add('active');
             document.getElementById('page-title').innerText = el.innerText;
-            
             document.getElementById('sec-dashboard').classList.add('hidden');
             document.getElementById('sec-tabelas').classList.add('hidden');
-
             if(sec === 'dashboard') {
                 document.getElementById('sec-dashboard').classList.remove('hidden');
                 updateDashboard();
@@ -289,12 +244,10 @@
             }
         }
 
-        // --- RENDERIZAÇÃO DE TABELAS ---
         function renderTable() {
             const head = document.getElementById('table-head');
             const body = document.getElementById('table-body');
             body.innerHTML = '';
-            
             const configs = {
                 clientes: { h: ['Nome', 'CPF', 'RG', 'Telefone'], f: ['nome', 'cpf', 'rg', 'tel'] },
                 funcionarios: { h: ['Nome', 'Função', 'Telefone', 'Documento'], f: ['nome', 'funcao', 'tel', 'doc'] },
@@ -303,26 +256,18 @@
                 ordem: { h: ['ID', 'Data', 'Cliente', 'Total'], f: ['id', 'data', 'cliente', 'total'] },
                 usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
             };
-
             const cfg = configs[currentSection];
             head.innerHTML = `<tr>${cfg.h.map(x => `<th>${x}</th>`).join('')}<th>Ações</th></tr>`;
-
             db[currentSection].forEach((item, i) => {
                 const tr = document.createElement('tr');
                 let botoes = `<button class="btn btn-edit" onclick="openModal(${i})"><i class="fas fa-edit"></i></button>`;
-                
-                if(currentSection === 'ordem') {
-                    botoes = `<button class="btn btn-pdf" onclick="gerarReciboPDF(${i})"><i class="fas fa-download"></i> PDF</button>` + botoes;
-                }
-                
+                if(currentSection === 'ordem') botoes = `<button class="btn btn-pdf" onclick="gerarReciboPDF(${i})"><i class="fas fa-download"></i> PDF</button>` + botoes;
                 botoes += `<button class="btn btn-del" onclick="deleteItem(${i})"><i class="fas fa-trash"></i></button>`;
-
                 tr.innerHTML = cfg.f.map(field => `<td>${item[field] || '-'}</td>`).join('') + `<td><div style="display:flex; gap:5px">${botoes}</div></td>`;
                 body.appendChild(tr);
             });
         }
 
-        // --- MODAL ---
         function openModal(index = null) {
             editIndex = index;
             const fields = document.getElementById('modal-fields');
@@ -331,110 +276,53 @@
             const data = index !== null ? db[currentSection][index] : {};
 
             if(currentSection === 'clientes') {
-                fields.innerHTML = `
-                    <label>Nome Completo</label><input id="f1" value="${data.nome||''}">
-                    <div style="display:flex; gap:10px">
-                        <div style="flex:1"><label>CPF</label><input id="f2" value="${data.cpf||''}"></div>
-                        <div style="flex:1"><label>RG</label><input id="f3" value="${data.rg||''}"></div>
-                    </div>
-                    <label>Telefone</label><input id="f4" value="${data.tel||''}">
-                    <label>Endereço Completo</label><textarea id="f5" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;">${data.endereco||''}</textarea>
-                `;
+                fields.innerHTML = `<label>Nome Completo</label><input id="f1" value="${data.nome||''}"> <div style="display:flex; gap:10px"><div style="flex:1"><label>CPF</label><input id="f2" value="${data.cpf||''}"></div><div style="flex:1"><label>RG</label><input id="f3" value="${data.rg||''}"></div></div><label>Telefone</label><input id="f4" value="${data.tel||''}"> <label>Endereço Completo</label><textarea id="f5" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;">${data.endereco||''}</textarea>`;
             } else if(currentSection === 'funcionarios') {
-                fields.innerHTML = `
-                    <label>Nome do Funcionário</label><input id="f1" value="${data.nome||''}">
-                    <label>Função</label><input id="f2" value="${data.funcao||''}">
-                    <label>Telefone</label><input id="f3" value="${data.tel||''}">
-                    <label>Documento (CPF ou RG)</label><input id="f4" value="${data.doc||''}">
-                    <label>Endereço</label><input id="f5" value="${data.endereco||''}">
-                `;
+                fields.innerHTML = `<label>Nome do Funcionário</label><input id="f1" value="${data.nome||''}"> <label>Função</label><input id="f2" value="${data.funcao||''}"> <label>Telefone</label><input id="f3" value="${data.tel||''}"> <label>Documento (CPF ou RG)</label><input id="f4" value="${data.doc||''}"> <label>Endereço</label><input id="f5" value="${data.endereco||''}">`;
             } else if(currentSection === 'servicos') {
-                fields.innerHTML = `
-                    <label>Nome do Serviço</label><input id="f1" value="${data.nome||''}">
-                    <label>Preço Sugerido (R$)</label><input id="f2" type="number" value="${data.preco||''}">
-                `;
+                fields.innerHTML = `<label>Nome do Serviço</label><input id="f1" value="${data.nome||''}"> <label>Preço Sugerido (R$)</label><input id="f2" type="number" value="${data.preco||''}">`;
             } else if(currentSection === 'estoque') {
-                fields.innerHTML = `
-                    <label>Marca do Veículo/Peça</label><input id="f1" value="${data.marca||''}">
-                    <label>Modelo (Peça)</label><input id="f2" value="${data.modelo||''}">
-                    <label>Quantidade Atual</label><input id="f3" type="number" value="${data.qtd||''}">
-                    <label>Preço de Venda (R$)</label><input id="f4" type="number" value="${data.preco||''}">
-                    <label>Estoque Mínimo (Alerta)</label><input id="f5" type="number" value="${data.minimo||'2'}">
-                `;
+                fields.innerHTML = `<label>Marca do Veículo/Peça</label><input id="f1" value="${data.marca||''}"> <label>Modelo (Peça)</label><input id="f2" value="${data.modelo||''}"> <label>Quantidade Atual</label><input id="f3" type="number" value="${data.qtd||''}"> <label>Preço de Venda (R$)</label><input id="f4" type="number" value="${data.preco||''}"> <label>Estoque Mínimo (Alerta)</label><input id="f5" type="number" value="${data.minimo||'2'}">`;
             } else if(currentSection === 'usuarios') {
-                fields.innerHTML = `
-                    <label>Nome Completo</label><input id="f1" value="${data.nome||''}">
-                    <label>Login de Acesso</label><input id="f2" value="${data.user||''}">
-                    <label>Senha</label><input id="f3" type="password" value="${data.pass||''}">
-                `;
+                fields.innerHTML = `<label>Nome Completo</label><input id="f1" value="${data.nome||''}"> <label>Login</label><input id="f2" value="${data.user||''}"> <label>Senha</label><input id="f3" type="password" value="${data.pass||''}">`;
             } else if(currentSection === 'ordem') {
                 const cliOpt = db.clientes.map(c => `<option ${data.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
                 const mecOpt = db.funcionarios.map(f => `<option ${data.mecanico === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
                 const servOpt = db.servicos.map(s => `<option value="${s.preco}">${s.nome} (R$ ${s.preco})</option>`).join('');
                 const marcas = [...new Set(db.estoque.map(e => e.marca))];
                 const marcaOpt = marcas.map(m => `<option>${m}</option>`).join('');
-
-                fields.innerHTML = `
-                    <label>Cliente</label><select id="f1">${cliOpt}</select>
-                    <label>Mecânico Responsável</label><select id="fMec">${mecOpt}</select>
-                    <label>Veículo (Placa/Cor)</label><input id="f2" value="${data.veiculo||''}">
-                    
-                    <div class="os-grid">
-                        <div>
-                            <label>Marca da Peça</label>
-                            <select id="selMarca" onchange="atualizarModelosOS(this.value)">
-                                <option value="">Selecione...</option>
-                                ${marcaOpt}
-                            </select>
-                        </div>
-                        <div>
-                            <label>Modelo (Peça)</label>
-                            <select id="selModelo" onchange="calcTotalOS()">
-                                <option value="0">Escolha a marca...</option>
-                            </select>
-                        </div>
-                        <div style="grid-column: span 2">
-                            <label>Serviço Realizado</label>
-                            <select id="selServ" onchange="calcTotalOS()">
-                                <option value="0">Nenhum serviço...</option>
-                                ${servOpt}
-                            </select>
-                        </div>
-                    </div>
-
-                    <h3 style="margin-top:20px; color:var(--secondary)">Valor Total: R$ <span id="displayTotal">0.00</span></h3>
-                    <input type="hidden" id="fTotal" value="0">
-                `;
-                if(index !== null) {
-                    setTimeout(() => {
-                        document.getElementById('selMarca').value = data.marca_peca || '';
-                        atualizarModelosOS(data.marca_peca, data.modelo_peca);
-                    }, 100);
-                }
+                fields.innerHTML = `<label>Cliente</label><select id="f1">${cliOpt}</select> <label>Mecânico Responsável</label><select id="fMec">${mecOpt}</select> <label>Veículo (Placa/Cor)</label><input id="f2" value="${data.veiculo||''}"> <div class="os-grid"><div><label>Marca da Peça</label><select id="selMarca" onchange="atualizarModelosOS(this.value)"><option value="">Selecione...</option>${marcaOpt}</select></div><div><label>Modelo (Peça)</label><select id="selModelo" onchange="calcTotalOS()"><option value="0">Escolha a marca...</option></select></div><div style="grid-column: span 2"><label>Serviço Realizado</label><select id="selServ" onchange="calcTotalOS()"><option value="0">Nenhum serviço...</option>${servOpt}</select></div></div><h3 style="margin-top:20px; color:var(--secondary)">Valor Total: R$ <span id="displayTotal">0.00</span></h3><input type="hidden" id="fTotal" value="0">`;
+                if(index !== null) { setTimeout(() => { document.getElementById('selMarca').value = data.marca_peca || ''; atualizarModelosOS(data.marca_peca, data.modelo_peca); }, 100); }
             }
         }
 
         function atualizarModelosOS(marca, selModelo = null) {
             const modelos = db.estoque.filter(e => e.marca === marca);
             const select = document.getElementById('selModelo');
-            select.innerHTML = '<option value="0">Selecione o modelo...</option>' + 
-                modelos.map(m => `<option value="${m.preco}" ${selModelo === m.modelo ? 'selected' : ''}>${m.modelo} (${m.qtd} un)</option>`).join('');
+            if(!select) return;
+            select.innerHTML = '<option value="0">Selecione o modelo...</option>' + modelos.map(m => `<option value="${m.preco}" ${selModelo === m.modelo ? 'selected' : ''}>${m.modelo} (${m.qtd} un)</option>`).join('');
             calcTotalOS();
         }
 
         function calcTotalOS() {
-            const selectModelo = document.getElementById('selModelo');
-            const selectServ = document.getElementById('selServ');
-            const pPeça = parseFloat(selectModelo.value) || 0;
-            const pServ = parseFloat(selectServ.value) || 0;
-            const total = pPeça + pServ;
-            document.getElementById('displayTotal').innerText = total.toFixed(2);
-            document.getElementById('fTotal').value = total.toFixed(2);
+            const sm = document.getElementById('selModelo');
+            const ss = document.getElementById('selServ');
+            const p1 = sm ? parseFloat(sm.value) || 0 : 0;
+            const p2 = ss ? parseFloat(ss.value) || 0 : 0;
+            const total = p1 + p2;
+            const dt = document.getElementById('displayTotal');
+            const ft = document.getElementById('fTotal');
+            if(dt) dt.innerText = total.toFixed(2);
+            if(ft) ft.value = total.toFixed(2);
         }
 
-        // --- SALVAMENTO (CORRIGIDO) ---
+        // --- FUNÇÃO DE SALVAMENTO CORRIGIDA ---
         function handleSave() {
-            const v = (id) => document.getElementById(id)?.value;
+            const v = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : "";
+            };
+            
             let obj = {};
 
             if(currentSection === 'clientes') {
@@ -448,29 +336,35 @@
             } else if(currentSection === 'usuarios') {
                 obj = {nome: v('f1'), user: v('f2'), pass: v('f3')};
             } else if(currentSection === 'ordem') {
-                const selectMarca = document.getElementById('selMarca');
-                const selectModelo = document.getElementById('selModelo');
-                const selectServ = document.getElementById('selServ');
+                // Captura segura dos selects da OS
+                const sMarca = document.getElementById('selMarca');
+                const sModelo = document.getElementById('selModelo');
+                const sServ = document.getElementById('selServ');
+
+                // Validação de texto selecionado
+                const txtModelo = (sModelo && sModelo.selectedIndex >= 0) ? sModelo.options[sModelo.selectedIndex].text.split(' (')[0] : "";
+                const txtServ = (sServ && sServ.selectedIndex >= 0) ? sServ.options[sServ.selectedIndex].text.split(' (')[0] : "";
 
                 obj = {
-                    id: editIndex !== null ? db.ordens[editIndex].id : Date.now().toString().slice(-6),
+                    id: editIndex !== null ? db.ordens[editIndex].id : "OS" + Math.floor(1000 + Math.random() * 9000),
                     data: editIndex !== null ? db.ordens[editIndex].data : new Date().toLocaleDateString(),
                     cliente: v('f1'),
                     mecanico: v('fMec'),
                     veiculo: v('f2'),
-                    marca_peca: selectMarca ? selectMarca.value : "",
-                    modelo_peca: (selectModelo && selectModelo.selectedIndex >= 0) ? selectModelo.options[selectModelo.selectedIndex].text.split(' (')[0] : "",
-                    servico: (selectServ && selectServ.selectedIndex >= 0) ? selectServ.options[selectServ.selectedIndex].text.split(' (')[0] : "",
+                    marca_peca: sMarca ? sMarca.value : "",
+                    modelo_peca: txtModelo,
+                    servico: txtServ,
                     total: parseFloat(v('fTotal')) || 0
                 };
 
-                // Baixa estoque apenas em nova OS e se for um modelo válido
+                // Baixa estoque (apenas novos registros)
                 if(editIndex === null && obj.modelo_peca !== "" && obj.modelo_peca !== "Selecione o modelo...") {
-                    let item = db.estoque.find(e => e.marca === obj.marca_peca && e.modelo === obj.modelo_peca);
-                    if(item) item.qtd--;
+                    let itemEst = db.estoque.find(e => e.marca === obj.marca_peca && e.modelo === obj.modelo_peca);
+                    if(itemEst && itemEst.qtd > 0) itemEst.qtd--;
                 }
             }
 
+            // Salva no Banco Local
             if(editIndex !== null) db[currentSection][editIndex] = obj;
             else db[currentSection].push(obj);
 
@@ -500,27 +394,23 @@
 
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        // --- DASHBOARD ---
         function updateDashboard() {
             const fat = db.ordens.reduce((a, b) => a + b.total, 0);
             document.getElementById('dash-faturamento').innerText = `R$ ${fat.toFixed(2)}`;
             document.getElementById('dash-os-count').innerText = db.ordens.length;
             document.getElementById('dash-cli-count').innerText = db.clientes.length;
-
             const criticos = db.estoque.filter(e => e.qtd <= e.minimo);
             document.getElementById('dash-est-critico').innerText = criticos.length;
-
             const alertBox = document.getElementById('estoque-alertas');
-            alertBox.innerHTML = '';
-            criticos.forEach(e => {
-                const tipo = e.qtd === 0 ? 'danger' : 'warning';
-                const msg = e.qtd === 0 ? `MODELO ESGOTADO: ${e.modelo} (${e.marca})` : `ESTOQUE MÍNIMO: ${e.modelo} (${e.qtd} un)`;
-                alertBox.innerHTML += `<div class="alert alert-${tipo}"><i class="fas fa-triangle-exclamation"></i> ${msg}</div>`;
-            });
-
-            renderTopPecas();
-            renderTopServicos();
-            renderTopMecanicos();
+            if(alertBox){
+                alertBox.innerHTML = '';
+                criticos.forEach(e => {
+                    const tipo = e.qtd === 0 ? 'danger' : 'warning';
+                    const msg = e.qtd === 0 ? `MODELO ESGOTADO: ${e.modelo} (${e.marca})` : `ESTOQUE MÍNIMO: ${e.modelo} (${e.qtd} un)`;
+                    alertBox.innerHTML += `<div class="alert alert-${tipo}"><i class="fas fa-triangle-exclamation"></i> ${msg}</div>`;
+                });
+            }
+            renderTopPecas(); renderTopServicos(); renderTopMecanicos();
         }
 
         function renderTopPecas() {
@@ -542,7 +432,9 @@
         }
 
         function initChart(id, dataObj, label, color) {
-            const ctx = document.getElementById(id).getContext('2d');
+            const canvas = document.getElementById(id);
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
             if(chartRefs[id]) chartRefs[id].destroy();
             chartRefs[id] = new Chart(ctx, {
                 type: 'bar',
@@ -557,12 +449,12 @@
         function exportarListaPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text(`Relatório de ${currentSection.toUpperCase()}`, 14, 15);
-            
-            const columns = Object.keys(db[currentSection][0] || {});
-            const rows = db[currentSection].map(item => Object.values(item));
-            
-            doc.autoTable({ head: [columns], body: rows, startY: 20 });
+            doc.text(`Relatorio de ${currentSection.toUpperCase()}`, 14, 15);
+            if(db[currentSection].length > 0){
+                const columns = Object.keys(db[currentSection][0]);
+                const rows = db[currentSection].map(item => Object.values(item));
+                doc.autoTable({ head: [columns], body: rows, startY: 20 });
+            }
             doc.save(`relatorio_${currentSection}.pdf`);
         }
 
@@ -570,32 +462,25 @@
             const { jsPDF } = window.jspdf;
             const os = db.ordens[index];
             const doc = new jsPDF();
-            
             doc.setFontSize(22);
             doc.text("THAYNARA AUTO VIDROS", 105, 20, {align: 'center'});
             doc.setFontSize(10);
-            doc.text("Comprovante de Ordem de Serviço", 105, 28, {align: 'center'});
+            doc.text("Comprovante de Ordem de Servico", 105, 28, {align: 'center'});
             doc.line(20, 35, 190, 35);
-            
             doc.setFontSize(12);
-            doc.text(`O.S. Nº: ${os.id}`, 20, 45);
+            doc.text(`O.S. Numero: ${os.id}`, 20, 45);
             doc.text(`Data: ${os.data}`, 150, 45);
             doc.text(`Cliente: ${os.cliente}`, 20, 55);
-            doc.text(`Veículo: ${os.veiculo}`, 20, 65);
-            doc.text(`Mecânico: ${os.mecanico}`, 20, 75);
-            
+            doc.text(`Veiculo: ${os.veiculo}`, 20, 65);
+            doc.text(`Mecanico: ${os.mecanico}`, 20, 75);
             doc.rect(20, 85, 170, 40);
-            doc.text("Descrição dos Serviços/Peças:", 25, 95);
+            doc.text("Descricao dos Servicos/Pecas:", 25, 95);
             doc.setFontSize(10);
-            doc.text(`- Peça: ${os.marca_peca || ''} ${os.modelo_peca || ''}`, 30, 105);
-            doc.text(`- Serviço: ${os.servico || ''}`, 30, 115);
-            
+            doc.text(`- Peca: ${os.marca_peca || ''} ${os.modelo_peca || ''}`, 30, 105);
+            doc.text(`- Servico: ${os.servico || ''}`, 30, 115);
             doc.setFontSize(16);
             doc.text(`VALOR TOTAL: R$ ${parseFloat(os.total).toFixed(2)}`, 190, 140, {align: 'right'});
-            doc.setFontSize(10);
-            doc.text("__________________________________________", 105, 170, {align: 'center'});
-            doc.text("Assinatura do Responsável", 105, 175, {align: 'center'});
-            doc.save(`OS_${os.id}_Thaynara.pdf`);
+            doc.save(`OS_${os.id}.pdf`);
         }
 
         function filtrarTabela() {
