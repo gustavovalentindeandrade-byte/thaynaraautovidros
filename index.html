@@ -189,6 +189,16 @@
 
         let currentSection = 'dashboard', editIndex = null, chartRefs = {};
 
+        // MAPEAMENTO GLOBAL PARA CORREÇÃO DE NOMES DE SEÇÃO
+        const mapaGeral = {
+            os: "ordens",
+            ordem: "ordens",
+            venda_pecas: "vendas_pecas",
+            clientes: "clientes",
+            funcionarios: "funcionarios",
+            estoque: "estoque"
+        };
+
         function handleLogin() {
             const u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value;
             const user = db.usuarios.find(x => x.user === u && x.pass === p);
@@ -220,23 +230,29 @@
                 usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
             }[currentSection];
 
+            let destino = mapaGeral[currentSection] || currentSection;
+
             head.innerHTML = `<tr>${cfg.h.map(x => `<th>${x}</th>`).join('')}<th>Ações</th></tr>`;
-            db[currentSection].forEach((item, i) => {
-                const tr = document.createElement('tr');
-                let botoes = `<button class="btn btn-edit btn-small" onclick="openModal(${i})"><i class="fas fa-edit"></i> Editar</button>`;
-                if(['ordem', 'venda_pecas'].includes(currentSection)) botoes = `<button class="btn btn-pdf btn-small" onclick="gerarPDF(${i})"><i class="fas fa-file-pdf"></i> PDF</button>` + botoes;
-                botoes += `<button class="btn btn-del btn-small" onclick="deleteItem(${i})"><i class="fas fa-trash"></i></button>`;
-                
-                tr.innerHTML = cfg.f.map(f => `<td>${item[f] || '-'}</td>`).join('') + `<td><div style="display:flex; gap:8px">${botoes}</div></td>`;
-                body.appendChild(tr);
-            });
+            if(db[destino]){
+                db[destino].forEach((item, i) => {
+                    const tr = document.createElement('tr');
+                    let botoes = `<button class="btn btn-edit btn-small" onclick="openModal(${i})"><i class="fas fa-edit"></i> Editar</button>`;
+                    if(['ordem', 'venda_pecas'].includes(currentSection)) botoes = `<button class="btn btn-pdf btn-small" onclick="gerarPDF(${i})"><i class="fas fa-file-pdf"></i> PDF</button>` + botoes;
+                    botoes += `<button class="btn btn-del btn-small" onclick="deleteItem(${i})"><i class="fas fa-trash"></i></button>`;
+                    
+                    tr.innerHTML = cfg.f.map(f => `<td>${item[f] || '-'}</td>`).join('') + `<td><div style="display:flex; gap:8px">${botoes}</div></td>`;
+                    body.appendChild(tr);
+                });
+            }
         }
 
         function openModal(index = null) {
             editIndex = index;
             const fields = document.getElementById('modal-fields'); fields.innerHTML = '';
             document.getElementById('modal').style.display = 'flex';
-            const d = index !== null ? db[currentSection][index] : {};
+            
+            let destino = mapaGeral[currentSection] || currentSection;
+            const d = index !== null ? db[destino][index] : {};
 
             if(currentSection === 'clientes') {
                 fields.innerHTML = `<label>Nome Completo</label><input id="f1" value="${d.nome||''}"> <div style="display:flex; gap:12px"><div style="flex:1"><label>CPF</label><input id="f2" value="${d.cpf||''}"></div><div style="flex:1"><label>RG</label><input id="f3" value="${d.rg||''}"></div></div><label>Telefone</label><input id="f4" value="${d.tel||''}"> <label>Endereço</label><textarea id="f5">${d.endereco||''}</textarea>`;
@@ -287,7 +303,6 @@
             if(document.getElementById('fTotal')) document.getElementById('fTotal').value = total.toFixed(2);
         }
 
-        // --- FUNÇÃO DE SALVAMENTO BLINDADA ---
         function handleSave() {
             try {
                 const v = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
@@ -304,7 +319,6 @@
                             const qty = parseInt(row.querySelector('.item-qty').value) || 0;
                             items.push({ nome: name, brand: brand, qtd: qty, preco: parseFloat(sel.value) });
                             
-                            // Baixa estoque (Somente Novos)
                             if(editIndex === null && brand) {
                                 let target = db.estoque.find(e => e.modelo === name && e.marca === brand);
                                 if(target) target.qtd -= qty;
@@ -312,7 +326,7 @@
                         }
                     });
 
-                    if(v('f1') === "" || items.length === 0) { alert("Preencha o cliente e adicione itens."); return; }
+                    if(v('f1') === "" || (items.length === 0 && currentSection === 'ordem')) { alert("Preencha os dados corretamente."); return; }
                     obj = { id: "N" + Math.floor(1000 + Math.random() * 9000), data: new Date().toLocaleDateString(), cliente: v('f1'), total: v('fTotal'), itens: items };
                     if(currentSection === 'ordem') { obj.mecanico = v('fMec'); obj.veiculo = v('f2'); }
                 } else if(currentSection === 'clientes') {
@@ -327,11 +341,32 @@
                     obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
                 }
 
-                if(editIndex !== null) db[currentSection][editIndex] = obj; else db[currentSection].push(obj);
+                // --- INÍCIO DA ALTERAÇÃO SOLICITADA ---
+                let mapa = {
+                    os: "ordens",
+                    ordem: "ordens",
+                    venda_pecas: "vendas_pecas",
+                    clientes: "clientes",
+                    funcionarios: "funcionarios",
+                    estoque: "estoque"
+                };
+
+                let destino = mapa[currentSection] || currentSection;
+
+                if(editIndex !== null) {
+                    db[destino][editIndex] = obj;
+                } else {
+                    if(!db[destino]){
+                        db[destino] = [];
+                    }
+                    db[destino].push(obj);
+                }
+                // --- FIM DA ALTERAÇÃO SOLICITADA ---
+
                 saveAll(); closeModal(); renderTable(); updateDashboard();
             } catch (err) {
                 console.error(err);
-                alert("Erro técnico. Verifique os dados e tente novamente.");
+                alert("Erro técnico ao salvar.");
             }
         }
 
@@ -345,7 +380,14 @@
             localStorage.setItem('th_user_v25', JSON.stringify(db.usuarios));
         }
 
-        function deleteItem(i) { if(confirm("Deseja realmente excluir este registro?")) { db[currentSection].splice(i, 1); saveAll(); renderTable(); updateDashboard(); } }
+        function deleteItem(i) { 
+            if(confirm("Deseja realmente excluir este registro?")) { 
+                let destino = mapaGeral[currentSection] || currentSection;
+                db[destino].splice(i, 1); 
+                saveAll(); renderTable(); updateDashboard(); 
+            } 
+        }
+
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
         function updateDashboard() {
@@ -378,7 +420,10 @@
         }
 
         function gerarPDF(i) {
-            const { jsPDF } = window.jspdf; const data = db[currentSection][i]; const doc = new jsPDF();
+            const { jsPDF } = window.jspdf; 
+            let destino = mapaGeral[currentSection] || currentSection;
+            const data = db[destino][i]; 
+            const doc = new jsPDF();
             const agora = new Date().toLocaleString();
             doc.setFontSize(22); doc.text("THAYNARA AUTO VIDROS", 105, 20, {align:'center'});
             doc.setFontSize(10); doc.text(`Emissão: ${agora}`, 190, 10, {align:'right'});
@@ -393,8 +438,9 @@
 
         function exportarListaPDF() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            let destino = mapaGeral[currentSection] || currentSection;
             doc.text(`Relatório ${currentSection.toUpperCase()} - ${new Date().toLocaleDateString()}`, 14, 15);
-            if(db[currentSection].length > 0) doc.autoTable({ head: [Object.keys(db[currentSection][0])], body: db[currentSection].map(x => Object.values(x)), startY: 22 });
+            if(db[destino].length > 0) doc.autoTable({ head: [Object.keys(db[destino][0])], body: db[destino].map(x => Object.values(x)), startY: 22 });
             doc.save(`Lista_${currentSection}.pdf`);
         }
 
