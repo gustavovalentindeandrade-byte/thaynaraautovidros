@@ -200,12 +200,21 @@
             estoque: "estoque"
         };
 
-        function handleLogin() {
-            const u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value;
-            const user = db.usuarios.find(x => x.user === u && x.pass === p);
-            if(user) { document.getElementById('login-overlay').style.display='none'; document.getElementById('welcomeName').innerText=user.nome; updateDashboard(); }
-            else { document.getElementById('login-err').style.display='block'; setTimeout(()=>document.getElementById('login-err').style.display='none', 2000); }
-        }
+       function handleLogin(){
+
+const user = document.getElementById("user").value;
+const pass = document.getElementById("pass").value;
+
+const ok = db.usuarios.find(u => u.user === user && u.pass === pass);
+
+if(ok){
+document.getElementById("login").style.display = "none";
+document.getElementById("app").style.display = "block";
+}else{
+alert("Usuário ou senha inválidos");
+}
+
+}
 
         function showSection(sec, el) {
             currentSection = sec;
@@ -355,9 +364,7 @@ console.error(erro);
 alert("Erro técnico. Verifique os dados e tente novamente.");
 
 }
-
 }
-                    });
 
                     if(v('f1') === "" || (items.length === 0 && currentSection === 'ordem')) { alert("Preencha os dados corretamente."); return; }
                     obj = { id: "N" + Math.floor(1000 + Math.random() * 9000), data: new Date().toLocaleDateString(), cliente: v('f1'), total: v('fTotal'), itens: items };
@@ -486,5 +493,6 @@ alert("Erro técnico. Verifique os dados e tente novamente.");
     </script>
 </body>
 </html>
+
 
 
