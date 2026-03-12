@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thaynara Auto Vidros - Sistema Pro 21.0</title>
+    <title>Thaynara Auto Vidros - Sistema Pro 22.0</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -73,7 +73,7 @@
         .modal-content label { display: block; margin-top: 15px; font-weight: 600; font-size: 13px; color: #475569; }
         .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
 
-        /* --- DINAMIC ROWS --- */
+        /* --- ITENS DINÂMICOS --- */
         .item-list { background: #f1f5f9; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid #e2e8f0; }
         .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 40px; gap: 10px; align-items: center; margin-bottom: 10px; }
         .item-row select, .item-row input { margin: 0 !important; padding: 8px !important; }
@@ -87,9 +87,9 @@
         <div class="login-box">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/150x100?text=Thaynara+Logo'">
             <h2>Thaynara Auto Vidros</h2>
-            <p>Sistema Pro 21.0</p>
-            <input type="text" id="loginUser" placeholder="Usuário (admin)">
-            <input type="password" id="loginPass" placeholder="Senha (123)">
+            <p>Sistema Pro 22.0</p>
+            <input type="text" id="loginUser" placeholder="Usuário">
+            <input type="password" id="loginPass" placeholder="Senha">
             <button onclick="handleLogin()">Entrar no Sistema</button>
             <div id="login-err" style="color:var(--danger); margin-top:15px; font-weight:600; display:none;">Login Inválido!</div>
         </div>
@@ -124,13 +124,14 @@
         <div class="container">
             <section id="sec-dashboard">
                 <div class="stats-grid">
-                    <div class="stat-card"><h3>Faturamento Oficina</h3><p id="dash-faturamento">R$ 0,00</p></div>
-                    <div class="stat-card"><h3>Faturamento Peças</h3><p id="dash-faturamento-pecas">R$ 0,00</p></div>
-                    <div class="stat-card"><h3>OS Totais</h3><p id="dash-os-count">0</p></div>
-                    <div class="stat-card"><h3>Clientes</h3><p id="dash-cli-count">0</p></div>
+                    <div class="stat-card"><h3>Oficina</h3><p id="dash-faturamento">R$ 0,00</p></div>
+                    <div class="stat-card"><h3>Autopeças</h3><p id="dash-faturamento-pecas">R$ 0,00</p></div>
+                    <div class="stat-card"><h3>OS Realizadas</h3><p id="dash-os-count">0</p></div>
+                    <div class="stat-card"><h3>Total Clientes</h3><p id="dash-cli-count">0</p></div>
                 </div>
-                <div class="charts-container">
-                    <div class="chart-box"><h4>Faturamento Geral</h4><canvas id="chartGeral"></canvas></div>
+                <div class="table-container" style="padding: 20px;">
+                    <h4>Distribuição de Vendas</h4>
+                    <canvas id="chartGeral" height="80"></canvas>
                 </div>
             </section>
 
@@ -152,7 +153,7 @@
             <h2 id="modal-title">Cadastro</h2>
             <div id="modal-fields"></div>
             <div style="display:flex; gap:12px; margin-top:30px">
-                <button class="btn btn-success" style="flex:1" onclick="handleSave()"><i class="fas fa-save"></i> Salvar Dados</button>
+                <button id="btnSalvarModal" class="btn btn-success" style="flex:1" onclick="handleSave()"><i class="fas fa-save"></i> Salvar Dados</button>
                 <button class="btn" style="flex:1; background:#f1f5f9" onclick="closeModal()">Cancelar</button>
             </div>
         </div>
@@ -160,15 +161,19 @@
 
     <script>
         // --- BANCO DE DADOS ---
-        const safeGet = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
+        const safeGet = (k, d) => {
+            try { return JSON.parse(localStorage.getItem(k)) || d; } 
+            catch(e) { return d; }
+        };
+
         let db = {
-            clientes: safeGet('th_cli_v21', []),
-            funcionarios: safeGet('th_func_v21', []),
-            servicos: safeGet('th_serv_v21', []),
-            estoque: safeGet('th_est_v21', []),
-            ordens: safeGet('th_ord_v21', []),
-            vendas_pecas: safeGet('th_vp_v21', []),
-            usuarios: safeGet('th_user_v21', [{nome:"Admin", user:"admin", pass:"123"}])
+            clientes: safeGet('th_cli_v22', []),
+            funcionarios: safeGet('th_func_v22', []),
+            servicos: safeGet('th_serv_v22', []),
+            estoque: safeGet('th_est_v22', []),
+            ordens: safeGet('th_ord_v22', []),
+            vendas_pecas: safeGet('th_vp_v22', []),
+            usuarios: safeGet('th_user_v22', [{nome:"Admin", user:"admin", pass:"123"}])
         };
 
         let currentSection = 'dashboard', editIndex = null, chartRef = null;
@@ -196,7 +201,7 @@
             body.innerHTML = '';
             const cfg = {
                 clientes: { h: ['Nome', 'CPF', 'Telefone'], f: ['nome', 'cpf', 'tel'] },
-                funcionarios: { h: ['Nome', 'Função', 'Doc'], f: ['nome', 'funcao', 'doc'] },
+                funcionarios: { h: ['Nome', 'Função', 'CPF'], f: ['nome', 'funcao', 'cpf'] },
                 servicos: { h: ['Serviço', 'Preço'], f: ['nome', 'preco'] },
                 estoque: { h: ['Marca', 'Modelo', 'Qtd'], f: ['marca', 'modelo', 'qtd'] },
                 ordem: { h: ['ID', 'Data', 'Cliente', 'Total'], f: ['id', 'data', 'cliente', 'total'] },
@@ -221,13 +226,24 @@
             const data = index !== null ? db[currentSection][index] : {};
 
             if(currentSection === 'clientes') {
-                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>CPF</label><input id="f2" value="${data.cpf||''}"> <label>Telefone</label><input id="f4" value="${data.tel||''}"> <label>Endereço</label><textarea id="f5">${data.endereco||''}</textarea>`;
+                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>CPF</label><input id="f2" value="${data.cpf||''}"> <label>Telefone</label><input id="f4" value="${data.tel||''}"> <label>Endereço Completo</label><textarea id="f5">${data.endereco||''}</textarea>`;
+            } else if(currentSection === 'funcionarios') {
+                fields.innerHTML = `
+                    <label>Nome Completo</label><input id="f1" value="${data.nome||''}"> 
+                    <label>Função</label><input id="f2" value="${data.funcao||''}"> 
+                    <div style="display:flex; gap:10px">
+                        <div style="flex:1"><label>CPF</label><input id="f3" value="${data.cpf||''}"></div>
+                        <div style="flex:1"><label>RG</label><input id="f4" value="${data.rg||''}"></div>
+                    </div>
+                    <label>Endereço Completo</label><textarea id="f5">${data.endereco||''}</textarea>
+                    <label>Telefone</label><input id="f6" value="${data.tel||''}">
+                `;
             } else if(currentSection === 'venda_pecas') {
                 const cli = db.clientes.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
                 fields.innerHTML = `
                     <label>Cliente</label><select id="f1"><option value="Consumidor Final">Consumidor Final</option>${cli}</select>
                     <div class="item-list">
-                        <h4>Itens da Venda</h4>
+                        <h4>Peças para Venda</h4>
                         <div id="venda-rows"></div>
                         <button class="btn btn-add btn-small" onclick="addItemRow('venda-rows', true)">+ Adicionar Peça</button>
                     </div>
@@ -245,22 +261,20 @@
                     <div class="item-list">
                         <h4>Serviços</h4>
                         <div id="serv-rows"></div>
-                        <button class="btn btn-add btn-small" onclick="addItemRow('serv-rows', false, 'servicos')">+ Serviço</button>
+                        <button class="btn btn-add btn-small" onclick="addItemRow('serv-rows', false)">+ Adicionar Serviço</button>
                     </div>
                     <div class="item-list">
                         <h4>Peças</h4>
                         <div id="peca-rows"></div>
-                        <button class="btn btn-add btn-small" onclick="addItemRow('peca-rows', true, 'estoque')">+ Peça</button>
+                        <button class="btn btn-add btn-small" onclick="addItemRow('peca-rows', true)">+ Adicionar Peça</button>
                     </div>
                     <h3 style="margin-top:20px">Total OS: R$ <span id="displayTotal">0.00</span></h3>
                     <input type="hidden" id="fTotal" value="0">
                 `;
-                addItemRow('serv-rows', false, 'servicos');
-                addItemRow('peca-rows', true, 'estoque');
-            } else if(currentSection === 'funcionarios') {
-                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Função</label><input id="f2" value="${data.funcao||''}"> <label>Doc</label><input id="f4" value="${data.doc||''}">`;
+                addItemRow('serv-rows', false);
+                addItemRow('peca-rows', true);
             } else if(currentSection === 'estoque') {
-                fields.innerHTML = `<label>Marca</label><input id="f1" value="${data.marca||''}"> <label>Modelo</label><input id="f2" value="${data.modelo||''}"> <label>Qtd</label><input id="f3" type="number" value="${data.qtd||''}"> <label>Venda</label><input id="f4" type="number" value="${data.preco||''}"> <label>Mínimo</label><input id="f5" type="number" value="${data.minimo||'2'}">`;
+                fields.innerHTML = `<label>Marca</label><input id="f1" value="${data.marca||''}"> <label>Modelo</label><input id="f2" value="${data.modelo||''}"> <label>Qtd</label><input id="f3" type="number" value="${data.qtd||''}"> <label>Venda (R$)</label><input id="f4" type="number" value="${data.preco||''}"> <label>Mínimo</label><input id="f5" type="number" value="${data.minimo||'2'}">`;
             } else if(currentSection === 'servicos') {
                 fields.innerHTML = `<label>Serviço</label><input id="f1" value="${data.nome||''}"> <label>Preço</label><input id="f2" type="number" value="${data.preco||''}">`;
             } else if(currentSection === 'usuarios') {
@@ -268,22 +282,20 @@
             }
         }
 
-        function addItemRow(containerId, isPart, dbKey) {
+        function addItemRow(containerId, isPart) {
             const container = document.getElementById(containerId);
+            if(!container) return;
             const div = document.createElement('div');
             div.className = 'item-row';
             
-            let options = '';
-            if(isPart) {
-                options = db.estoque.map(e => `<option value="${e.preco}" data-name="${e.modelo}" data-marca="${e.marca}">${e.modelo} (${e.marca}) - R$ ${e.preco}</option>`).join('');
-            } else {
-                options = db.servicos.map(s => `<option value="${s.preco}" data-name="${s.nome}">${s.nome} - R$ ${s.preco}</option>`).join('');
-            }
+            let options = isPart 
+                ? db.estoque.map(e => `<option value="${e.preco}" data-name="${e.modelo}" data-marca="${e.marca}">${e.modelo} (${e.marca}) - R$ ${e.preco}</option>`).join('')
+                : db.servicos.map(s => `<option value="${s.preco}" data-name="${s.nome}">${s.nome} - R$ ${s.preco}</option>`).join('');
 
             div.innerHTML = `
                 <select class="item-select" onchange="calcTotal()"><option value="0">Selecione...</option>${options}</select>
-                <input type="number" class="item-qty" value="1" min="1" onchange="calcTotal()" placeholder="Qtd">
-                <input type="text" class="item-price" readonly placeholder="Preço">
+                <input type="number" class="item-qty" value="1" min="1" onchange="calcTotal()">
+                <input type="text" class="item-price" readonly value="0.00">
                 <button class="btn btn-del btn-small" onclick="this.parentElement.remove(); calcTotal();"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(div);
@@ -293,84 +305,100 @@
             let total = 0;
             document.querySelectorAll('.item-row').forEach(row => {
                 const sel = row.querySelector('.item-select');
-                const qty = row.querySelector('.item-qty').value;
-                const price = sel.value;
-                const rowTotal = parseFloat(price) * parseInt(qty);
-                row.querySelector('.item-price').value = rowTotal.toFixed(2);
-                total += rowTotal;
+                const qty = parseInt(row.querySelector('.item-qty').value) || 1;
+                const price = parseFloat(sel.value) || 0;
+                const st = price * qty;
+                row.querySelector('.item-price').value = st.toFixed(2);
+                total += st;
             });
-            document.getElementById('displayTotal').innerText = total.toFixed(2);
-            document.getElementById('fTotal').value = total.toFixed(2);
+            if(document.getElementById('displayTotal')) document.getElementById('displayTotal').innerText = total.toFixed(2);
+            if(document.getElementById('fTotal')) document.getElementById('fTotal').value = total.toFixed(2);
         }
 
+        // --- FUNÇÃO DE SALVAMENTO REVISADA ---
         function handleSave() {
-            const v = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
-            let obj = {};
+            try {
+                const v = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+                let obj = {};
 
-            if(currentSection === 'venda_pecas' || currentSection === 'ordem') {
-                const items = [];
-                document.querySelectorAll('.item-row').forEach(row => {
-                    const sel = row.querySelector('.item-select');
-                    if(sel.selectedIndex > 0) {
-                        const opt = sel.options[sel.selectedIndex];
-                        items.push({
-                            nome: opt.getAttribute('data-name'),
-                            marca: opt.getAttribute('data-marca') || '',
-                            qtd: parseInt(row.querySelector('.item-qty').value),
-                            preco: parseFloat(opt.value),
-                            isPart: !!opt.getAttribute('data-marca')
-                        });
-                        // Baixa de estoque
-                        if(opt.getAttribute('data-marca')) {
-                            let part = db.estoque.find(e => e.modelo === opt.getAttribute('data-name') && e.marca === opt.getAttribute('data-marca'));
-                            if(part) part.qtd -= parseInt(row.querySelector('.item-qty').value);
+                if(currentSection === 'venda_pecas' || currentSection === 'ordem') {
+                    const items = [];
+                    const rows = document.querySelectorAll('.item-row');
+                    
+                    rows.forEach(row => {
+                        const sel = row.querySelector('.item-select');
+                        if(sel && sel.selectedIndex > 0) {
+                            const opt = sel.options[sel.selectedIndex];
+                            const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+                            const name = opt.getAttribute('data-name');
+                            const brand = opt.getAttribute('data-marca') || '';
+                            const price = parseFloat(opt.value);
+
+                            items.push({ nome: name, marca: brand, qtd: qty, preco: price });
+
+                            // Baixa de estoque apenas para itens com "marca" (peças)
+                            if(brand) {
+                                let target = db.estoque.find(e => e.modelo === name && e.marca === brand);
+                                if(target) target.qtd -= qty;
+                            }
                         }
+                    });
+
+                    if(items.length === 0) { alert("Adicione pelo menos um item."); return; }
+
+                    obj = {
+                        id: "N" + Math.floor(1000 + Math.random() * 9000),
+                        data: new Date().toLocaleDateString(),
+                        cliente: v('f1'),
+                        total: v('fTotal'),
+                        itens: items
+                    };
+
+                    if(currentSection === 'ordem') {
+                        obj.mecanico = v('fMec');
+                        obj.veiculo = v('f2');
                     }
-                });
-
-                obj = {
-                    id: "N" + Math.floor(1000 + Math.random() * 9000),
-                    data: new Date().toLocaleDateString(),
-                    cliente: v('f1'),
-                    total: v('fTotal'),
-                    itens: items
-                };
-                if(currentSection === 'ordem') {
-                    obj.mecanico = v('fMec');
-                    obj.veiculo = v('f2');
+                } else if(currentSection === 'clientes') {
+                    obj = { nome: v('f1'), cpf: v('f2'), tel: v('f4'), endereco: v('f5') };
+                } else if(currentSection === 'funcionarios') {
+                    obj = { nome: v('f1'), funcao: v('f2'), cpf: v('f3'), rg: v('f4'), endereco: v('f5'), tel: v('f6') };
+                } else if(currentSection === 'estoque') {
+                    obj = { marca: v('f1'), modelo: v('f2'), qtd: parseInt(v('f3')), preco: parseFloat(v('f4')), minimo: parseInt(v('f5')) };
+                } else if(currentSection === 'servicos') {
+                    obj = { nome: v('f1'), preco: v('f2') };
+                } else if(currentSection === 'usuarios') {
+                    obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
                 }
-            } else if(currentSection === 'clientes') {
-                obj = { nome: v('f1'), cpf: v('f2'), tel: v('f4'), endereco: v('f5') };
-            } else if(currentSection === 'funcionarios') {
-                obj = { nome: v('f1'), funcao: v('f2'), doc: v('f4') };
-            } else if(currentSection === 'estoque') {
-                obj = { marca: v('f1'), modelo: v('f2'), qtd: parseInt(v('f3')), preco: parseFloat(v('f4')), minimo: parseInt(v('f5')) };
-            } else if(currentSection === 'servicos') {
-                obj = { nome: v('f1'), preco: v('f2') };
-            } else if(currentSection === 'usuarios') {
-                obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
-            }
 
-            if(editIndex !== null) db[currentSection][editIndex] = obj; else db[currentSection].push(obj);
-            saveAll(); closeModal(); renderTable(); updateDashboard();
+                if(editIndex !== null) db[currentSection][editIndex] = obj; 
+                else db[currentSection].push(obj);
+
+                saveAll(); 
+                closeModal(); 
+                renderTable(); 
+                updateDashboard();
+            } catch (err) {
+                console.error("Erro no salvamento:", err);
+                alert("Erro técnico ao salvar. Verifique se todos os campos estão preenchidos.");
+            }
         }
 
         function saveAll() {
-            localStorage.setItem('th_cli_v21', JSON.stringify(db.clientes));
-            localStorage.setItem('th_func_v21', JSON.stringify(db.funcionarios));
-            localStorage.setItem('th_serv_v21', JSON.stringify(db.servicos));
-            localStorage.setItem('th_est_v21', JSON.stringify(db.estoque));
-            localStorage.setItem('th_ord_v21', JSON.stringify(db.ordens));
-            localStorage.setItem('th_vp_v21', JSON.stringify(db.vendas_pecas));
-            localStorage.setItem('th_user_v21', JSON.stringify(db.usuarios));
+            localStorage.setItem('th_cli_v22', JSON.stringify(db.clientes));
+            localStorage.setItem('th_func_v22', JSON.stringify(db.funcionarios));
+            localStorage.setItem('th_serv_v22', JSON.stringify(db.servicos));
+            localStorage.setItem('th_est_v22', JSON.stringify(db.estoque));
+            localStorage.setItem('th_ord_v22', JSON.stringify(db.ordens));
+            localStorage.setItem('th_vp_v22', JSON.stringify(db.vendas_pecas));
+            localStorage.setItem('th_user_v22', JSON.stringify(db.usuarios));
         }
 
-        function deleteItem(i) { if(confirm("Excluir?")) { db[currentSection].splice(i, 1); saveAll(); renderTable(); updateDashboard(); } }
+        function deleteItem(i) { if(confirm("Excluir registro?")) { db[currentSection].splice(i, 1); saveAll(); renderTable(); updateDashboard(); } }
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
         function updateDashboard() {
-            const fatOS = db.ordens.reduce((a, b) => a + parseFloat(b.total), 0);
-            const fatVP = db.vendas_pecas.reduce((a, b) => a + parseFloat(b.total), 0);
+            const fatOS = db.ordens.reduce((a, b) => a + parseFloat(b.total || 0), 0);
+            const fatVP = db.vendas_pecas.reduce((a, b) => a + parseFloat(b.total || 0), 0);
             document.getElementById('dash-faturamento').innerText = `R$ ${fatOS.toFixed(2)}`;
             document.getElementById('dash-faturamento-pecas').innerText = `R$ ${fatVP.toFixed(2)}`;
             document.getElementById('dash-os-count').innerText = db.ordens.length;
@@ -379,11 +407,12 @@
             const ctx = document.getElementById('chartGeral'); if(!ctx) return;
             if(chartRef) chartRef.destroy();
             chartRef = new Chart(ctx.getContext('2d'), {
-                type: 'doughnut',
+                type: 'bar',
                 data: {
-                    labels: ['Oficina', 'Peças'],
-                    datasets: [{ data: [fatOS, fatVP], backgroundColor: ['#3b82f6', '#10b981'] }]
-                }
+                    labels: ['Oficina (Serviços)', 'Autopeças (Vendas)'],
+                    datasets: [{ data: [fatOS, fatVP], backgroundColor: ['#3b82f6', '#10b981'], borderRadius: 10 }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
             });
         }
 
@@ -393,7 +422,7 @@
             const doc = new jsPDF();
             
             doc.setFontSize(20); doc.text("THAYNARA AUTO VIDROS", 105, 20, {align:'center'});
-            doc.setFontSize(10); doc.text(currentSection === 'ordem' ? "ORDEM DE SERVIÇO" : "RECIBO DE VENDA DE PEÇAS", 105, 28, {align:'center'});
+            doc.setFontSize(10); doc.text(currentSection === 'ordem' ? "ORDEM DE SERVIÇO" : "COMPROVANTE DE VENDA", 105, 28, {align:'center'});
             doc.line(20, 35, 190, 35);
 
             doc.text(`ID: ${data.id}`, 20, 45);
@@ -403,15 +432,18 @@
             if(data.mecanico) doc.text(`Mecânico: ${data.mecanico}`, 20, 66);
 
             const tableRows = data.itens.map(it => [it.nome, it.qtd, `R$ ${it.preco.toFixed(2)}`, `R$ ${(it.qtd * it.preco).toFixed(2)}`]);
-            doc.autoTable({
-                head: [['Item', 'Qtd', 'Unitário', 'Subtotal']],
-                body: tableRows,
-                startY: 75
-            });
+            doc.autoTable({ head: [['Item', 'Qtd', 'Unitário', 'Subtotal']], body: tableRows, startY: 75 });
 
             doc.setFontSize(14);
-            doc.text(`TOTAL GERAL: R$ ${parseFloat(data.total).toFixed(2)}`, 190, doc.autoTable.previous.finalY + 15, {align:'right'});
+            doc.text(`TOTAL: R$ ${parseFloat(data.total).toFixed(2)}`, 190, doc.autoTable.previous.finalY + 15, {align:'right'});
             doc.save(`${data.id}_Thaynara.pdf`);
+        }
+
+        function exportarListaPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            doc.text(`Relatório ${currentSection.toUpperCase()} - ${new Date().toLocaleDateString()}`, 14, 15);
+            if(db[currentSection].length > 0) doc.autoTable({ head: [Object.keys(db[currentSection][0])], body: db[currentSection].map(x => Object.values(x)), startY: 22 });
+            doc.save(`Relatorio_${currentSection}.pdf`);
         }
 
         function filtrarTabela() {
