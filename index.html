@@ -186,6 +186,7 @@
             vendas_pecas: safeGet('th_vp_v25', []),
             usuarios: safeGet('th_user_v25', [{nome:"Admin", user:"admin", pass:"123"}])
         };
+        let currentEditIndex = null;
 
         let currentSection = 'dashboard', editIndex = null, chartRefs = {};
 
@@ -303,31 +304,29 @@
             if(document.getElementById('fTotal')) document.getElementById('fTotal').value = total.toFixed(2);
         }
 
-        function handleSave(){
+ function handleSave(){
 
 try{
 
-const form = document.querySelectorAll("#modal input, #modal select");
+let form = document.querySelectorAll("#modal input, #modal select");
 
 let obj = {};
 
-form.forEach((f,i)=>{
-obj["f"+i] = f.value;
+form.forEach((campo,index)=>{
+obj["f"+index] = campo.value;
 });
 
-obj.data = new Date().toLocaleString();
+obj.data = new Date().toLocaleDateString();
 
-let mapa = {
-os: "ordens",
-ordem: "ordens",
-venda_pecas: "vendas_pecas",
-vendas: "vendas_pecas",
-clientes: "clientes",
-funcionarios: "funcionarios",
-estoque: "estoque"
-};
+let destino = currentSection;
 
-let destino = mapa[currentSection] || currentSection;
+if(currentSection === "os"){
+destino = "ordens";
+}
+
+if(currentSection === "venda_pecas"){
+destino = "vendas_pecas";
+}
 
 if(!db[destino]){
 db[destino] = [];
@@ -350,9 +349,9 @@ renderTable();
 updateDashboard();
 closeModal();
 
-}catch(e){
+}catch(erro){
 
-console.error(e);
+console.error(erro);
 alert("Erro técnico. Verifique os dados e tente novamente.");
 
 }
@@ -487,4 +486,5 @@ alert("Erro técnico. Verifique os dados e tente novamente.");
     </script>
 </body>
 </html>
+
 
