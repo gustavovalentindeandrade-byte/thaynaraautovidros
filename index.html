@@ -161,16 +161,25 @@
 
     <script>
         // --- BANCO DE DADOS ---
-        const safeGet = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
-        let db = {
-            clientes: safeGet('th_cli_v24', []),
-            funcionarios: safeGet('th_func_v24', []),
-            servicos: safeGet('th_serv_v24', []),
-            estoque: safeGet('th_est_v24', []),
-            ordens: safeGet('th_ord_v24', []),
-            vendas_pecas: safeGet('th_vp_v24', []),
-            usuarios: safeGet('th_user_v24', [{nome:"Admin", user:"admin", pass:"123"}])
-        };
+       // BANCO DE DADOS
+function safeGet(key, def){
+  try{
+    const val = JSON.parse(localStorage.getItem(key));
+    return val || def;
+  }catch(e){
+    return def;
+  }
+}
+
+let db = {
+  clientes: safeGet('th_cli_v24', []) || [],
+  funcionarios: safeGet('th_func_v24', []) || [],
+  servicos: safeGet('th_serv_v24', []) || [],
+  estoque: safeGet('th_est_v24', []) || [],
+  ordens: safeGet('th_ord_v24', []) || [],
+  vendas_pecas: safeGet('th_vp_v24', []) || [],
+  usuarios: safeGet('th_user_v24', [{nome:"Admin", user:"admin", pass:"123"}]) || []
+};
 
         let currentSection = 'dashboard', editIndex = null, chartRef = null;
 
@@ -205,7 +214,8 @@
                 usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
             }[currentSection];
             head.innerHTML = `<tr>${cfg.h.map(x => `<th>${x}</th>`).join('')}<th>Ações</th></tr>`;
-            db[currentSection].forEach((item, i) => {
+            const lista = db[currentSection] || [];
+lista.forEach((item, i) => {
                 const tr = document.createElement('tr');
                 let botoes = `<button class="btn btn-pdf" onclick="gerarPDF(${i})"><i class="fas fa-file-pdf"></i></button>`;
                 botoes += `<button class="btn btn-del" onclick="deleteItem(${i})"><i class="fas fa-trash"></i></button>`;
@@ -492,4 +502,5 @@
     </script>
 </body>
 </html>
+
 
