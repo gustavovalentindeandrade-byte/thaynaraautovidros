@@ -23,7 +23,7 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        body { background: var(--bg-light); display: flex; height: 100vh; overflow: hidden; color: #1e293b; }
+        body { background: var(--bg-light); display: flex; height: 100vh; overflow: hidden; color: #1e2937; }
 
         /* --- TELA DE LOGIN MODERNA --- */
         #login-overlay { 
@@ -134,7 +134,7 @@
 </head>
 <body>
 
-    <!-- Tela de Login Modernizada -->
+    <!-- Tela de Login -->
     <div id="login-overlay">
         <div class="login-box">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/150x100?text=Thaynara+Logo'">
@@ -167,7 +167,7 @@
         </div>
     </nav>
 
-    <!-- Main Area -->
+    <!-- Main -->
     <main>
         <header>
             <h2 id="page-title">Dashboard</h2>
@@ -240,7 +240,7 @@
     </div>
 
     <script>
-        // --- BANCO DE DADOS E INICIALIZAÇÃO ---
+        // --- BANCO DE DADOS ---
         let db = {
             clientes: JSON.parse(localStorage.getItem('th_cli_v16') || '[]'),
             funcionarios: JSON.parse(localStorage.getItem('th_func_v16') || '[]'),
@@ -265,9 +265,8 @@
                 document.getElementById('welcomeName').innerText = user.nome;
                 updateDashboard();
             } else {
-                const err = document.getElementById('login-err');
-                err.style.display = 'block';
-                setTimeout(() => err.style.display = 'none', 3000);
+                document.getElementById('login-err').style.display = 'block';
+                setTimeout(() => document.getElementById('login-err').style.display = 'none', 3000);
             }
         }
 
@@ -406,10 +405,12 @@
                     <h3 style="margin-top:20px; color:var(--secondary)">Valor Total: R$ <span id="displayTotal">0.00</span></h3>
                     <input type="hidden" id="fTotal" value="0">
                 `;
-                if(index !== null) setTimeout(() => {
-                    document.getElementById('selMarca').value = data.marca_peca;
-                    atualizarModelosOS(data.marca_peca, data.modelo_peca);
-                }, 100);
+                if(index !== null) {
+                    setTimeout(() => {
+                        document.getElementById('selMarca').value = data.marca_peca || '';
+                        atualizarModelosOS(data.marca_peca, data.modelo_peca);
+                    }, 100);
+                }
             }
         }
 
@@ -422,14 +423,16 @@
         }
 
         function calcTotalOS() {
-            const pPeça = parseFloat(document.getElementById('selModelo').value) || 0;
-            const pServ = parseFloat(document.getElementById('selServ').value) || 0;
+            const selectModelo = document.getElementById('selModelo');
+            const selectServ = document.getElementById('selServ');
+            const pPeça = parseFloat(selectModelo.value) || 0;
+            const pServ = parseFloat(selectServ.value) || 0;
             const total = pPeça + pServ;
             document.getElementById('displayTotal').innerText = total.toFixed(2);
             document.getElementById('fTotal').value = total.toFixed(2);
         }
 
-        // --- SALVAMENTO ---
+        // --- SALVAMENTO (CORRIGIDO) ---
         function handleSave() {
             const v = (id) => document.getElementById(id)?.value;
             let obj = {};
@@ -439,30 +442,30 @@
             } else if(currentSection === 'funcionarios') {
                 obj = {nome: v('f1'), funcao: v('f2'), tel: v('f3'), doc: v('f4'), endereco: v('f5')};
             } else if(currentSection === 'servicos') {
-                obj = {nome: v('f1'), preco: v('f2')};
+                obj = {nome: v('f1'), preco: parseFloat(v('f2')) || 0};
             } else if(currentSection === 'estoque') {
-                obj = {marca: v('f1'), modelo: v('f2'), qtd: parseInt(v('f3')), preco: parseFloat(v('f4')), minimo: parseInt(v('f5'))};
+                obj = {marca: v('f1'), modelo: v('f2'), qtd: parseInt(v('f3')) || 0, preco: parseFloat(v('f4')) || 0, minimo: parseInt(v('f5')) || 0};
             } else if(currentSection === 'usuarios') {
                 obj = {nome: v('f1'), user: v('f2'), pass: v('f3')};
             } else if(currentSection === 'ordem') {
-                const sM = document.getElementById('selMarca');
-                const sMo = document.getElementById('selModelo');
-                const sS = document.getElementById('selServ');
+                const selectMarca = document.getElementById('selMarca');
+                const selectModelo = document.getElementById('selModelo');
+                const selectServ = document.getElementById('selServ');
 
                 obj = {
                     id: editIndex !== null ? db.ordens[editIndex].id : Date.now().toString().slice(-6),
-                    data: new Date().toLocaleDateString(),
+                    data: editIndex !== null ? db.ordens[editIndex].data : new Date().toLocaleDateString(),
                     cliente: v('f1'),
                     mecanico: v('fMec'),
                     veiculo: v('f2'),
-                    marca_peca: sM.value,
-                    modelo_peca: sMo.options[sMo.selectedIndex].text.split(' (')[0],
-                    servico: sS.options[sS.selectedIndex].text.split(' (')[0],
-                    total: parseFloat(v('fTotal'))
+                    marca_peca: selectMarca ? selectMarca.value : "",
+                    modelo_peca: (selectModelo && selectModelo.selectedIndex >= 0) ? selectModelo.options[selectModelo.selectedIndex].text.split(' (')[0] : "",
+                    servico: (selectServ && selectServ.selectedIndex >= 0) ? selectServ.options[selectServ.selectedIndex].text.split(' (')[0] : "",
+                    total: parseFloat(v('fTotal')) || 0
                 };
 
-                // Baixa estoque apenas em nova OS
-                if(editIndex === null && obj.modelo_peca !== 'Selecione o modelo...') {
+                // Baixa estoque apenas em nova OS e se for um modelo válido
+                if(editIndex === null && obj.modelo_peca !== "" && obj.modelo_peca !== "Selecione o modelo...") {
                     let item = db.estoque.find(e => e.marca === obj.marca_peca && e.modelo === obj.modelo_peca);
                     if(item) item.qtd--;
                 }
@@ -497,7 +500,7 @@
 
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        // --- DASHBOARD E INDICADORES ---
+        // --- DASHBOARD ---
         function updateDashboard() {
             const fat = db.ordens.reduce((a, b) => a + b.total, 0);
             document.getElementById('dash-faturamento').innerText = `R$ ${fat.toFixed(2)}`;
@@ -507,7 +510,6 @@
             const criticos = db.estoque.filter(e => e.qtd <= e.minimo);
             document.getElementById('dash-est-critico').innerText = criticos.length;
 
-            // Alertas de Estoque
             const alertBox = document.getElementById('estoque-alertas');
             alertBox.innerHTML = '';
             criticos.forEach(e => {
@@ -516,7 +518,6 @@
                 alertBox.innerHTML += `<div class="alert alert-${tipo}"><i class="fas fa-triangle-exclamation"></i> ${msg}</div>`;
             });
 
-            // Dashboards Gráficos
             renderTopPecas();
             renderTopServicos();
             renderTopMecanicos();
@@ -524,19 +525,19 @@
 
         function renderTopPecas() {
             const counts = {};
-            db.ordens.forEach(o => { if(o.modelo_peca !== 'Selecione o modelo...') counts[o.modelo_peca] = (counts[o.modelo_peca] || 0) + 1 });
+            db.ordens.forEach(o => { if(o.modelo_peca && o.modelo_peca !== "Selecione o modelo...") counts[o.modelo_peca] = (counts[o.modelo_peca] || 0) + 1 });
             initChart('chartPecas', counts, 'Unidades', '#f59e0b');
         }
 
         function renderTopServicos() {
             const counts = {};
-            db.ordens.forEach(o => { if(o.servico !== 'Nenhum serviço...') counts[o.servico] = (counts[o.servico] || 0) + 1 });
+            db.ordens.forEach(o => { if(o.servico && o.servico !== "Nenhum serviço...") counts[o.servico] = (counts[o.servico] || 0) + 1 });
             initChart('chartServicos', counts, 'Execuções', '#3b82f6');
         }
 
         function renderTopMecanicos() {
             const counts = {};
-            db.ordens.forEach(o => counts[o.mecanico] = (counts[o.mecanico] || 0) + 1);
+            db.ordens.forEach(o => { counts[o.mecanico] = (counts[o.mecanico] || 0) + 1 });
             initChart('chartMecanicos', counts, 'Serviços', '#10b981');
         }
 
@@ -549,11 +550,10 @@
                     labels: Object.keys(dataObj),
                     datasets: [{ label: label, data: Object.values(dataObj), backgroundColor: color, borderRadius: 5 }]
                 },
-                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
             });
         }
 
-        // --- PDF E RELATÓRIOS ---
         function exportarListaPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -575,13 +575,11 @@
             doc.text("THAYNARA AUTO VIDROS", 105, 20, {align: 'center'});
             doc.setFontSize(10);
             doc.text("Comprovante de Ordem de Serviço", 105, 28, {align: 'center'});
-            
             doc.line(20, 35, 190, 35);
             
             doc.setFontSize(12);
             doc.text(`O.S. Nº: ${os.id}`, 20, 45);
             doc.text(`Data: ${os.data}`, 150, 45);
-            
             doc.text(`Cliente: ${os.cliente}`, 20, 55);
             doc.text(`Veículo: ${os.veiculo}`, 20, 65);
             doc.text(`Mecânico: ${os.mecanico}`, 20, 75);
@@ -589,16 +587,14 @@
             doc.rect(20, 85, 170, 40);
             doc.text("Descrição dos Serviços/Peças:", 25, 95);
             doc.setFontSize(10);
-            doc.text(`- Peça: ${os.marca_peca} ${os.modelo_peca}`, 30, 105);
-            doc.text(`- Serviço: ${os.servico}`, 30, 115);
+            doc.text(`- Peça: ${os.marca_peca || ''} ${os.modelo_peca || ''}`, 30, 105);
+            doc.text(`- Serviço: ${os.servico || ''}`, 30, 115);
             
             doc.setFontSize(16);
-            doc.text(`VALOR TOTAL: R$ ${os.total.toFixed(2)}`, 190, 140, {align: 'right'});
-            
+            doc.text(`VALOR TOTAL: R$ ${parseFloat(os.total).toFixed(2)}`, 190, 140, {align: 'right'});
             doc.setFontSize(10);
             doc.text("__________________________________________", 105, 170, {align: 'center'});
             doc.text("Assinatura do Responsável", 105, 175, {align: 'center'});
-            
             doc.save(`OS_${os.id}_Thaynara.pdf`);
         }
 
