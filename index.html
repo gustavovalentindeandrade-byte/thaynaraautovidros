@@ -214,7 +214,7 @@ let db = {
                 usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
             }[currentSection];
             head.innerHTML = `<tr>${cfg.h.map(x => `<th>${x}</th>`).join('')}<th>Ações</th></tr>`;
-            const lista = db[currentSection] || [];
+            const lista = (db[currentSection] || []).forEach((item, i) => {
 lista.forEach((item, i) => {
                 const tr = document.createElement('tr');
                 let botoes = `<button class="btn btn-pdf" onclick="gerarPDF(${i})"><i class="fas fa-file-pdf"></i></button>`;
@@ -502,5 +502,6 @@ lista.forEach((item, i) => {
     </script>
 </body>
 </html>
+
 
 
