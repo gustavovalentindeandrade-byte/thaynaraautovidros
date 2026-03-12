@@ -303,27 +303,61 @@
             if(document.getElementById('fTotal')) document.getElementById('fTotal').value = total.toFixed(2);
         }
 
-        function handleSave() {
-            try {
-                const v = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
-                let obj = {};
+        function handleSave(){
 
-                if(['ordem', 'venda_pecas'].includes(currentSection)) {
-                    const items = [];
-                    document.querySelectorAll('.item-row').forEach(row => {
-                        const sel = row.querySelector('.item-select');
-                        if(sel && sel.selectedIndex > 0) {
-                            const opt = sel.options[sel.selectedIndex];
-                            const brand = opt.getAttribute('data-brand') || "";
-                            const name = opt.getAttribute('data-name');
-                            const qty = parseInt(row.querySelector('.item-qty').value) || 0;
-                            items.push({ nome: name, brand: brand, qtd: qty, preco: parseFloat(sel.value) });
-                            
-                            if(editIndex === null && brand) {
-                                let target = db.estoque.find(e => e.modelo === name && e.marca === brand);
-                                if(target) target.qtd -= qty;
-                            }
-                        }
+try{
+
+const form = document.querySelectorAll("#modal input, #modal select");
+
+let obj = {};
+
+form.forEach((f,i)=>{
+obj["f"+i] = f.value;
+});
+
+obj.data = new Date().toLocaleString();
+
+let mapa = {
+os: "ordens",
+ordem: "ordens",
+venda_pecas: "vendas_pecas",
+vendas: "vendas_pecas",
+clientes: "clientes",
+funcionarios: "funcionarios",
+estoque: "estoque"
+};
+
+let destino = mapa[currentSection] || currentSection;
+
+if(!db[destino]){
+db[destino] = [];
+}
+
+if(currentEditIndex !== null){
+
+db[destino][currentEditIndex] = obj;
+currentEditIndex = null;
+
+}else{
+
+db[destino].push(obj);
+
+}
+
+localStorage.setItem("th_db", JSON.stringify(db));
+
+renderTable();
+updateDashboard();
+closeModal();
+
+}catch(e){
+
+console.error(e);
+alert("Erro técnico. Verifique os dados e tente novamente.");
+
+}
+
+}
                     });
 
                     if(v('f1') === "" || (items.length === 0 && currentSection === 'ordem')) { alert("Preencha os dados corretamente."); return; }
@@ -453,3 +487,4 @@
     </script>
 </body>
 </html>
+
