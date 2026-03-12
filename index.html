@@ -25,7 +25,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         body { background: var(--bg-light); display: flex; height: 100vh; overflow: hidden; color: #1e2937; }
 
-        /* --- TELA DE LOGIN --- */
+        /* --- LOGIN --- */
         #login-overlay { 
             position: fixed; inset: 0; 
             background: linear-gradient(135deg, #0f172a 0%, #1e2937 100%);
@@ -39,18 +39,8 @@
         }
         .login-box img { width: 150px; margin-bottom: 20px; border-radius: 12px; }
         .login-box h2 { color: var(--primary); margin-bottom: 10px; font-weight: 800; font-size: 24px; }
-        .login-box p { color: #64748b; margin-bottom: 30px; font-size: 14px; }
-        .login-box input { 
-            width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #e2e8f0; 
-            border-radius: 10px; font-size: 16px; background: #f1f5f9; transition: 0.3s;
-        }
-        .login-box input:focus { border-color: var(--secondary); outline: none; background: #fff; }
-        .login-box button { 
-            width: 100%; padding: 14px; background: var(--secondary); color: white; 
-            border: none; border-radius: 10px; cursor: pointer; font-weight: bold; 
-            font-size: 16px; margin-top: 15px; transition: 0.3s;
-        }
-        .login-box button:hover { background: #2563eb; transform: translateY(-2px); }
+        .login-box input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; background: #f1f5f9; }
+        .login-box button { width: 100%; padding: 14px; background: var(--secondary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 15px; }
 
         /* --- SIDEBAR --- */
         nav { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px 0; }
@@ -58,9 +48,8 @@
         .nav-logo img { width: 110px; margin-bottom: 10px; border-radius: 8px; }
         .nav-logo h3 { font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-        .menu-item { padding: 14px 25px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; color: #94a3b8; font-size: 14px; font-weight: 500; }
+        .menu-item { padding: 14px 25px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; color: #94a3b8; font-size: 14px; }
         .menu-item:hover, .menu-item.active { background: #1e293b; color: white; border-left: 4px solid var(--secondary); }
-        .menu-item i { width: 20px; text-align: center; }
 
         /* --- ÁREA PRINCIPAL --- */
         main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -69,39 +58,21 @@
             justify-content: space-between; align-items: center; padding: 0 30px; 
             border-bottom: 1px solid #e2e8f0;
         }
-        .welcome-badge { 
-            background: #f1f5f9; padding: 8px 16px; border-radius: 50px; 
-            font-size: 14px; font-weight: 600; color: var(--primary);
-            display: flex; align-items: center; gap: 8px;
-        }
+        .welcome-badge { background: #f1f5f9; padding: 8px 16px; border-radius: 50px; font-size: 14px; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 
         .container { padding: 25px; overflow-y: auto; flex: 1; }
 
         /* --- DASHBOARD --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
-        .stat-card h3 { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .stat-card h3 { font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 10px; }
         .stat-card p { font-size: 28px; font-weight: 700; color: var(--primary); }
 
-        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .chart-box { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .chart-box h4 { margin-bottom: 20px; font-size: 16px; color: #475569; }
-
-        /* --- ALERTAS --- */
-        .alert-area { margin-bottom: 25px; }
-        .alert { padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
-        .alert-danger { background: #fee2e2; color: #b91c1c; border-left: 6px solid var(--danger); }
-        .alert-warning { background: #ffedd5; color: #9a3412; border-left: 6px solid var(--warning); }
-
         /* --- TABELAS --- */
-        .action-bar { 
-            background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; 
-            display: flex; justify-content: space-between; align-items: center; gap: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
+        .action-bar { background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .search-box { position: relative; flex: 1; max-width: 400px; }
         .search-box i { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
-        .search-box input { width: 100%; padding: 10px 10px 10px 45px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; }
+        .search-box input { width: 100%; padding: 10px 10px 10px 45px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; }
 
         .table-container { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -119,7 +90,6 @@
         /* --- MODAL --- */
         .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 5000; backdrop-filter: blur(4px); }
         .modal-content { background: white; padding: 35px; border-radius: 20px; width: 95%; max-width: 650px; max-height: 90vh; overflow-y: auto; }
-        .modal-content h2 { margin-bottom: 25px; font-size: 20px; color: var(--primary); }
         .modal-content label { display: block; margin-top: 15px; font-weight: 600; font-size: 13px; color: #475569; }
         .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
 
@@ -129,11 +99,11 @@
 </head>
 <body>
 
+    <!-- Login -->
     <div id="login-overlay">
         <div class="login-box">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/150x100?text=Thaynara+Logo'">
             <h2>Thaynara Auto Vidros</h2>
-            <p>Sistema de Gestão Profissional Pro 16.0</p>
             <input type="text" id="loginUser" placeholder="Usuário">
             <input type="password" id="loginPass" placeholder="Senha">
             <button onclick="handleLogin()">Entrar no Sistema</button>
@@ -141,6 +111,7 @@
         </div>
     </div>
 
+    <!-- Sidebar -->
     <nav>
         <div class="nav-logo">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/100x70?text=LOGO'">
@@ -158,6 +129,7 @@
         </div>
     </nav>
 
+    <!-- Main Content -->
     <main>
         <header>
             <h2 id="page-title">Dashboard</h2>
@@ -207,7 +179,6 @@
     </div>
 
     <script>
-        // --- BANCO DE DADOS ---
         let db = {
             clientes: JSON.parse(localStorage.getItem('th_cli_v16') || '[]'),
             funcionarios: JSON.parse(localStorage.getItem('th_func_v16') || '[]'),
@@ -256,10 +227,10 @@
             const body = document.getElementById('table-body');
             body.innerHTML = '';
             const configs = {
-                clientes: { h: ['Nome', 'CPF', 'RG', 'Telefone'], f: ['nome', 'cpf', 'rg', 'tel'] },
-                funcionarios: { h: ['Nome', 'Função', 'Telefone', 'Documento'], f: ['nome', 'funcao', 'tel', 'doc'] },
+                clientes: { h: ['Nome', 'CPF', 'Telefone'], f: ['nome', 'cpf', 'tel'] },
+                funcionarios: { h: ['Nome', 'Função', 'Telefone'], f: ['nome', 'funcao', 'tel'] },
                 servicos: { h: ['Serviço', 'Preço'], f: ['nome', 'preco'] },
-                estoque: { h: ['Marca', 'Modelo', 'Qtd', 'Mínimo'], f: ['marca', 'modelo', 'qtd', 'minimo'] },
+                estoque: { h: ['Marca', 'Modelo', 'Qtd'], f: ['marca', 'modelo', 'qtd'] },
                 ordem: { h: ['ID', 'Data', 'Cliente', 'Total'], f: ['id', 'data', 'cliente', 'total'] },
                 usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
             };
@@ -283,23 +254,57 @@
             const data = index !== null ? db[currentSection][index] : {};
 
             if(currentSection === 'clientes') {
-                fields.innerHTML = `<label>Nome Completo</label><input id="f1" value="${data.nome||''}"> <div style="display:flex; gap:10px"><div style="flex:1"><label>CPF</label><input id="f2" value="${data.cpf||''}"></div><div style="flex:1"><label>RG</label><input id="f3" value="${data.rg||''}"></div></div><label>Telefone</label><input id="f4" value="${data.tel||''}"> <label>Endereço Completo</label><textarea id="f5" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;">${data.endereco||''}</textarea>`;
+                fields.innerHTML = `<label>Nome Completo</label><input id="f1" value="${data.nome||''}"> <div style="display:flex; gap:10px"><div style="flex:1"><label>CPF</label><input id="f2" value="${data.cpf||''}"></div><div style="flex:1"><label>RG</label><input id="f3" value="${data.rg||''}"></div></div><label>Telefone</label><input id="f4" value="${data.tel||''}"> <label>Endereço</label><textarea id="f5">${data.endereco||''}</textarea>`;
             } else if(currentSection === 'funcionarios') {
-                fields.innerHTML = `<label>Nome do Funcionário</label><input id="f1" value="${data.nome||''}"> <label>Função</label><input id="f2" value="${data.funcao||''}"> <label>Telefone</label><input id="f3" value="${data.tel||''}"> <label>Documento (CPF ou RG)</label><input id="f4" value="${data.doc||''}"> <label>Endereço</label><input id="f5" value="${data.endereco||''}">`;
+                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Função</label><input id="f2" value="${data.funcao||''}"> <label>Telefone</label><input id="f3" value="${data.tel||''}"> <label>Doc (CPF/RG)</label><input id="f4" value="${data.doc||''}"> <label>Endereço</label><input id="f5" value="${data.endereco||''}">`;
             } else if(currentSection === 'servicos') {
-                fields.innerHTML = `<label>Nome do Serviço</label><input id="f1" value="${data.nome||''}"> <label>Preço Sugerido (R$)</label><input id="f2" type="number" value="${data.preco||''}">`;
+                fields.innerHTML = `<label>Serviço</label><input id="f1" value="${data.nome||''}"> <label>Preço</label><input id="f2" type="number" value="${data.preco||''}">`;
             } else if(currentSection === 'estoque') {
-                fields.innerHTML = `<label>Marca do Veículo/Peça</label><input id="f1" value="${data.marca||''}"> <label>Modelo (Peça)</label><input id="f2" value="${data.modelo||''}"> <label>Quantidade Atual</label><input id="f3" type="number" value="${data.qtd||''}"> <label>Preço de Venda (R$)</label><input id="f4" type="number" value="${data.preco||''}"> <label>Estoque Mínimo (Alerta)</label><input id="f5" type="number" value="${data.minimo||'2'}">`;
+                fields.innerHTML = `<label>Marca</label><input id="f1" value="${data.marca||''}"> <label>Modelo</label><input id="f2" value="${data.modelo||''}"> <label>Qtd</label><input id="f3" type="number" value="${data.qtd||''}"> <label>Venda (R$)</label><input id="f4" type="number" value="${data.preco||''}"> <label>Estoque Mínimo</label><input id="f5" type="number" value="${data.minimo||'2'}">`;
             } else if(currentSection === 'usuarios') {
-                fields.innerHTML = `<label>Nome Completo</label><input id="f1" value="${data.nome||''}"> <label>Login</label><input id="f2" value="${data.user||''}"> <label>Senha</label><input id="f3" type="password" value="${data.pass||''}">`;
+                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Login</label><input id="f2" value="${data.user||''}"> <label>Senha</label><input id="f3" type="password" value="${data.pass||''}">`;
             } else if(currentSection === 'ordem') {
                 const cliOpt = db.clientes.map(c => `<option ${data.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
                 const mecOpt = db.funcionarios.map(f => `<option ${data.mecanico === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
                 const servOpt = db.servicos.map(s => `<option value="${s.preco}">${s.nome} (R$ ${s.preco})</option>`).join('');
                 const marcas = [...new Set(db.estoque.map(e => e.marca))];
                 const marcaOpt = marcas.map(m => `<option>${m}</option>`).join('');
-                fields.innerHTML = `<label>Cliente</label><select id="f1">${cliOpt}</select> <label>Mecânico Responsável</label><select id="fMec">${mecOpt}</select> <label>Veículo (Placa/Cor)</label><input id="f2" value="${data.veiculo||''}"> <div class="os-grid"><div><label>Marca da Peça</label><select id="selMarca" onchange="atualizarModelosOS(this.value)"><option value="">Selecione...</option>${marcaOpt}</select></div><div><label>Modelo (Peça)</label><select id="selModelo" onchange="calcTotalOS()"><option value="0">Escolha a marca...</option></select></div><div style="grid-column: span 2"><label>Serviço Realizado</label><select id="selServ" onchange="calcTotalOS()"><option value="0">Nenhum serviço...</option>${servOpt}</select></div></div><h3 style="margin-top:20px; color:var(--secondary)">Valor Total: R$ <span id="displayTotal">0.00</span></h3><input type="hidden" id="fTotal" value="0">`;
-                if(index !== null) { setTimeout(() => { document.getElementById('selMarca').value = data.marca_peca || ''; atualizarModelosOS(data.marca_peca, data.modelo_peca); }, 100); }
+                
+                fields.innerHTML = `
+                    <label>Cliente</label><select id="f1">${cliOpt}</select>
+                    <label>Mecânico Responsável</label><select id="fMec">${mecOpt}</select>
+                    <label>Veículo (Placa/Cor)</label><input id="f2" value="${data.veiculo||''}">
+                    <div class="os-grid">
+                        <div>
+                            <label>Marca da Peça</label>
+                            <select id="selMarca" onchange="atualizarModelosOS(this.value)">
+                                <option value="">Selecione...</option>
+                                ${marcaOpt}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Modelo (Peça)</label>
+                            <select id="selModelo" onchange="calcTotalOS()">
+                                <option value="0">Escolha a marca...</option>
+                            </select>
+                        </div>
+                        <div style="grid-column: span 2">
+                            <label>Serviço Realizado</label>
+                            <select id="selServ" onchange="calcTotalOS()">
+                                <option value="0">Nenhum serviço...</option>
+                                ${servOpt}
+                            </select>
+                        </div>
+                    </div>
+                    <h3 style="margin-top:20px; color:var(--secondary)">Valor Total: R$ <span id="displayTotal">0.00</span></h3>
+                    <input type="hidden" id="fTotal" value="0">
+                `;
+                if(index !== null) { 
+                    setTimeout(() => { 
+                        document.getElementById('selMarca').value = data.marca_peca || ''; 
+                        atualizarModelosOS(data.marca_peca, data.modelo_peca); 
+                    }, 100); 
+                }
             }
         }
 
@@ -307,7 +312,8 @@
             const modelos = db.estoque.filter(e => e.marca === marca);
             const select = document.getElementById('selModelo');
             if(!select) return;
-            select.innerHTML = '<option value="0">Selecione o modelo...</option>' + modelos.map(m => `<option value="${m.preco}" ${selModelo === m.modelo ? 'selected' : ''}>${m.modelo} (${m.qtd} un)</option>`).join('');
+            select.innerHTML = '<option value="0">Selecione o modelo...</option>' + 
+                modelos.map(m => `<option value="${m.preco}" ${selModelo === m.modelo ? 'selected' : ''}>${m.modelo} (${m.qtd} un)</option>`).join('');
             calcTotalOS();
         }
 
@@ -323,7 +329,6 @@
             if(ft) ft.value = total.toFixed(2);
         }
 
-        // --- FUNÇÃO DE SALVAMENTO CORRIGIDA (OS ANALISADA) ---
         function handleSave() {
             const v = (id) => {
                 const el = document.getElementById(id);
@@ -332,7 +337,6 @@
             
             let obj = {};
 
-            // Mapeamento de coleções
             if(currentSection === 'clientes') {
                 obj = {nome: v('f1'), cpf: v('f2'), rg: v('f3'), tel: v('f4'), endereco: v('f5')};
             } else if(currentSection === 'funcionarios') {
@@ -348,7 +352,7 @@
                 const sModelo = document.getElementById('selModelo');
                 const sServ = document.getElementById('selServ');
 
-                // Validação de segurança para evitar crash
+                // Captura segura de dropdowns (Correção Erro Undefined)
                 const valModelo = (sModelo && sModelo.selectedIndex > 0) ? sModelo.options[sModelo.selectedIndex].text.split(' (')[0] : "Não informado";
                 const valServ = (sServ && sServ.selectedIndex > 0) ? sServ.options[sServ.selectedIndex].text.split(' (')[0] : "Nenhum";
 
@@ -356,7 +360,7 @@
                     id: editIndex !== null ? db.ordens[editIndex].id : "OS" + Math.floor(1000 + Math.random() * 9000),
                     data: editIndex !== null ? db.ordens[editIndex].data : new Date().toLocaleDateString(),
                     cliente: v('f1'),
-                    mecanico: v('fMec'),
+                    mecanico: v('fMec'), // ID CORRIGIDO
                     veiculo: v('f2'),
                     marca_peca: sMarca ? sMarca.value : "",
                     modelo_peca: valModelo,
@@ -364,7 +368,7 @@
                     total: parseFloat(document.getElementById('fTotal').value) || 0
                 };
 
-                // Baixa de estoque apenas para NOVAS Ordens
+                // Baixa de estoque (Comparação apenas pelo Nome do Modelo)
                 if(editIndex === null && obj.marca_peca !== "" && valModelo !== "Não informado") {
                     let itemEst = db.estoque.find(e => e.marca === obj.marca_peca && e.modelo === obj.modelo_peca);
                     if(itemEst && itemEst.qtd > 0) {
@@ -373,14 +377,9 @@
                 }
             }
 
-            // Inserção no Array
-            if(editIndex !== null) {
-                db[currentSection][editIndex] = obj;
-            } else {
-                db[currentSection].push(obj);
-            }
+            if(editIndex !== null) db[currentSection][editIndex] = obj;
+            else db[currentSection].push(obj);
 
-            // Persistência em "Banco de Dados" (LocalStorage)
             saveAll();
             closeModal();
             renderTable();
@@ -397,7 +396,7 @@
         }
 
         function deleteItem(i) {
-            if(confirm("Deseja realmente excluir?")) {
+            if(confirm("Excluir?")) {
                 db[currentSection].splice(i, 1);
                 saveAll();
                 renderTable();
@@ -427,17 +426,12 @@
         }
 
         function renderCharts() {
-            // Gráfico Peças
             const pCounts = {};
             db.ordens.forEach(o => { if(o.modelo_peca !== "Não informado") pCounts[o.modelo_peca] = (pCounts[o.modelo_peca] || 0) + 1 });
             initChart('chartPecas', pCounts, 'Unidades', '#f59e0b');
-
-            // Gráfico Serviços
             const sCounts = {};
             db.ordens.forEach(o => { if(o.servico !== "Nenhum") sCounts[o.servico] = (sCounts[o.servico] || 0) + 1 });
             initChart('chartServicos', sCounts, 'Execuções', '#3b82f6');
-
-            // Gráfico Mecânicos
             const mCounts = {};
             db.ordens.forEach(o => { mCounts[o.mecanico] = (mCounts[o.mecanico] || 0) + 1 });
             initChart('chartMecanicos', mCounts, 'Serviços', '#10b981');
@@ -461,7 +455,7 @@
         function exportarListaPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text(`Relatório de ${currentSection.toUpperCase()}`, 14, 15);
+            doc.text(`Relatorio de ${currentSection.toUpperCase()}`, 14, 15);
             if(db[currentSection].length > 0){
                 const columns = Object.keys(db[currentSection][0]);
                 const rows = db[currentSection].map(item => Object.values(item));
@@ -477,19 +471,19 @@
             doc.setFontSize(22);
             doc.text("THAYNARA AUTO VIDROS", 105, 20, {align: 'center'});
             doc.setFontSize(10);
-            doc.text("Comprovante de Ordem de Serviço", 105, 28, {align: 'center'});
+            doc.text("Comprovante de Ordem de Servico", 105, 28, {align: 'center'});
             doc.line(20, 35, 190, 35);
             doc.setFontSize(12);
-            doc.text(`O.S. Número: ${os.id}`, 20, 45);
+            doc.text(`O.S. Numero: ${os.id}`, 20, 45);
             doc.text(`Data: ${os.data}`, 150, 45);
             doc.text(`Cliente: ${os.cliente}`, 20, 55);
-            doc.text(`Veículo: ${os.veiculo}`, 20, 65);
-            doc.text(`Mecânico: ${os.mecanico}`, 20, 75);
+            doc.text(`Veiculo: ${os.veiculo}`, 20, 65);
+            doc.text(`Mecanico: ${os.mecanico}`, 20, 75);
             doc.rect(20, 85, 170, 40);
-            doc.text("Descrição dos Serviços/Peças:", 25, 95);
+            doc.text("Descricao dos Servicos/Pecas:", 25, 95);
             doc.setFontSize(10);
-            doc.text(`- Peça: ${os.marca_peca || ''} ${os.modelo_peca || ''}`, 30, 105);
-            doc.text(`- Serviço: ${os.servico || ''}`, 30, 115);
+            doc.text(`- Peca: ${os.marca_peca || ''} ${os.modelo_peca || ''}`, 30, 105);
+            doc.text(`- Servico: ${os.servico || ''}`, 30, 115);
             doc.setFontSize(16);
             doc.text(`VALOR TOTAL: R$ ${parseFloat(os.total).toFixed(2)}`, 190, 140, {align: 'right'});
             doc.save(`OS_${os.id}.pdf`);
