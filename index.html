@@ -268,80 +268,193 @@
         }
 
         // --- SALVAMENTO CORRIGIDO ---
-        function handleSave() {
-            try {
-                // Função auxiliar de captura segura
-                const getVal = (id) => {
-                    const el = document.getElementById(id);
-                    return el ? el.value.trim() : "";
-                };
+     function handleSave() {
+    try {
 
-                let obj = {};
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : "";
+        };
 
-                // 1. Lógica para OS e VENDA DE PEÇAS
-                if(currentSection === 'ordem' || currentSection === 'venda_pecas') {
-                    const items = [];
-                    const rows = document.querySelectorAll('.item-row');
-                    
-                    rows.forEach(row => {
-                        const sel = row.querySelector('.item-select');
-                        if(sel && sel.selectedIndex > 0) {
-                            const opt = sel.options[sel.selectedIndex];
-                            const qty = parseInt(row.querySelector('.item-qty').value) || 0;
-                            const name = opt.getAttribute('data-name');
-                            const brand = opt.getAttribute('data-marca') || "";
-                            items.push({ nome: name, marca: brand, qty: qty, price: parseFloat(sel.value) });
+        let obj = {};
+        let sectionKey = currentSection;
 
-                            // Baixa estoque (se for peça)
-                            if(brand !== "") {
-                                let stockItem = db.estoque.find(e => e.modelo === name && e.marca === brand);
-                                if(stockItem) stockItem.qtd -= qty;
-                            }
-                        }
-                    });
+        // Corrigir nomes das tabelas
+        if(currentSection === "ordem") sectionKey = "ordens";
+        if(currentSection === "venda_pecas") sectionKey = "vendas_pecas";
 
-                    // Validação mínima
-                    if(getVal('f1') === "") { alert("Informe o Cliente."); return; }
-                    if(currentSection === 'ordem' && (getVal('fMec') === "" || getVal('f2') === "")) { alert("Informe Mecânico e Veículo."); return; }
+        // -------------------------
+        // ORDEM DE SERVIÇO / VENDA
+        // -------------------------
+        if(currentSection === 'ordem' || currentSection === 'venda_pecas') {
 
-                    obj = {
-                        id: "N" + Math.floor(1000 + Math.random() * 9000),
-                        data: new Date().toLocaleDateString(),
-                        cliente: getVal('f1'),
-                        total: getVal('fTotal'),
-                        itens: items
-                    };
+            const items = [];
 
-                    if(currentSection === 'ordem') {
-                        obj.mecanico = getVal('fMec');
-                        obj.veiculo = getVal('f2');
+            document.querySelectorAll('.item-row').forEach(row => {
+
+                const sel = row.querySelector('.item-select');
+                if(!sel || sel.selectedIndex <= 0) return;
+
+                const opt = sel.options[sel.selectedIndex];
+
+                const qty = parseInt(row.querySelector('.item-qty').value) || 1;
+                const price = parseFloat(sel.value) || 0;
+
+                const nome = opt.getAttribute('data-name');
+                const marca = opt.getAttribute('data-marca') || "";
+
+                items.push({
+                    nome: nome,
+                    marca: marca,
+                    qty: qty,
+                    price: price
+                });
+
+                // baixa no estoque
+                if(marca !== "") {
+                    const estoqueItem = db.estoque.find(e => e.modelo === nome && e.marca === marca);
+                    if(estoqueItem){
+                        estoqueItem.qtd -= qty;
+                        if(estoqueItem.qtd < 0) estoqueItem.qtd = 0;
                     }
-                } 
-                // 2. Lógica para cadastros simples
-                else if(currentSection === 'clientes') {
-                    if(getVal('f1') === "") { alert("Nome é obrigatório."); return; }
-                    obj = { nome: getVal('f1'), cpf: getVal('f2'), tel: getVal('f4'), endereco: getVal('f5') };
-                } else if(currentSection === 'funcionarios') {
-                    obj = { nome: getVal('f1'), funcao: getVal('f2'), cpf: getVal('f3'), rg: getVal('f4'), endereco: getVal('f5'), tel: getVal('f6') };
-                } else if(currentSection === 'estoque') {
-                    obj = { marca: getVal('f1'), modelo: getVal('f2'), qtd: parseInt(getVal('f3'))||0, preco: parseFloat(getVal('f4'))||0, minimo: parseInt(getVal('f5'))||0 };
-                } else if(currentSection === 'servicos') {
-                    obj = { nome: getVal('f1'), preco: getVal('f2') };
-                } else if(currentSection === 'usuarios') {
-                    obj = { nome: getVal('f1'), user: getVal('f2'), pass: getVal('f3') };
                 }
 
-                // Finalização
-                db[currentSection].push(obj);
-                localStorage.setItem(`th_${currentSection === 'ordem' ? 'ord' : (currentSection === 'venda_pecas' ? 'vp' : currentSection.slice(0,3))}_v24`, JSON.stringify(db[currentSection]));
-                if(currentSection === 'ordem' || currentSection === 'venda_pecas') localStorage.setItem('th_est_v24', JSON.stringify(db.estoque));
-                
-                closeModal(); renderTable(); updateDashboard();
-            } catch (err) {
-                console.error("Erro crítico ao salvar:", err);
-                alert("Erro técnico. Verifique os dados e tente novamente.");
+            });
+
+            if(getVal('f1') === "") {
+                alert("Selecione um cliente.");
+                return;
             }
+
+            if(items.length === 0){
+                alert("Adicione pelo menos um serviço ou peça.");
+                return;
+            }
+
+            if(currentSection === 'ordem'){
+                if(getVal('fMec') === "" || getVal('f2') === ""){
+                    alert("Informe mecânico e veículo.");
+                    return;
+                }
+            }
+
+            obj = {
+                id: "N" + Date.now(),
+                data: new Date().toLocaleDateString(),
+                cliente: getVal('f1'),
+                total: getVal('fTotal'),
+                itens: items
+            };
+
+            if(currentSection === 'ordem'){
+                obj.mecanico = getVal('fMec');
+                obj.veiculo = getVal('f2');
+            }
+
         }
+
+        // -------------------------
+        // CLIENTES
+        // -------------------------
+        else if(currentSection === 'clientes'){
+
+            if(getVal('f1') === ""){
+                alert("Nome é obrigatório.");
+                return;
+            }
+
+            obj = {
+                nome: getVal('f1'),
+                cpf: getVal('f2'),
+                tel: getVal('f4'),
+                endereco: getVal('f5')
+            };
+
+        }
+
+        // -------------------------
+        // FUNCIONÁRIOS
+        // -------------------------
+        else if(currentSection === 'funcionarios'){
+
+            obj = {
+                nome: getVal('f1'),
+                funcao: getVal('f2'),
+                cpf: getVal('f3'),
+                rg: getVal('f4'),
+                endereco: getVal('f5'),
+                tel: getVal('f6')
+            };
+
+        }
+
+        // -------------------------
+        // ESTOQUE
+        // -------------------------
+        else if(currentSection === 'estoque'){
+
+            obj = {
+                marca: getVal('f1'),
+                modelo: getVal('f2'),
+                qtd: parseInt(getVal('f3')) || 0,
+                preco: parseFloat(getVal('f4')) || 0,
+                minimo: parseInt(getVal('f5')) || 0
+            };
+
+        }
+
+        // -------------------------
+        // SERVIÇOS
+        // -------------------------
+        else if(currentSection === 'servicos'){
+
+            obj = {
+                nome: getVal('f1'),
+                preco: parseFloat(getVal('f2')) || 0
+            };
+
+        }
+
+        // -------------------------
+        // USUÁRIOS
+        // -------------------------
+        else if(currentSection === 'usuarios'){
+
+            obj = {
+                nome: getVal('f1'),
+                user: getVal('f2'),
+                pass: getVal('f3')
+            };
+
+        }
+
+        // salvar
+        db[sectionKey].push(obj);
+
+        // salvar no localStorage
+        if(sectionKey === "ordens"){
+            localStorage.setItem("th_ord_v24", JSON.stringify(db.ordens));
+        }
+        else if(sectionKey === "vendas_pecas"){
+            localStorage.setItem("th_vp_v24", JSON.stringify(db.vendas_pecas));
+        }
+        else{
+            localStorage.setItem(`th_${sectionKey.slice(0,3)}_v24`, JSON.stringify(db[sectionKey]));
+        }
+
+        localStorage.setItem("th_est_v24", JSON.stringify(db.estoque));
+
+        closeModal();
+        renderTable();
+        updateDashboard();
+
+    } catch(err){
+
+        console.error("Erro ao salvar:", err);
+        alert("Erro técnico. Verifique os dados e tente novamente.");
+
+    }
+}
 
         function deleteItem(i) { if(confirm("Excluir?")) { db[currentSection].splice(i, 1); localStorage.setItem(`th_${currentSection.slice(0,3)}_v24`, JSON.stringify(db[currentSection])); renderTable(); updateDashboard(); } }
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
@@ -379,3 +492,4 @@
     </script>
 </body>
 </html>
+
