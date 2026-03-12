@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thaynara Auto Vidros - Sistema Pro 25.0</title>
     
+    <!-- Bibliotecas Necessárias -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -33,6 +34,7 @@
         .nav-logo { text-align: center; padding: 0 10px 25px 10px; border-bottom: 1px solid #334155; margin-bottom: 10px; }
         .nav-logo img { width: 100px; margin-bottom: 10px; border-radius: 8px; }
         .nav-logo h3 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; }
+        
         .menu-item { padding: 14px 25px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; color: #94a3b8; font-size: 14px; font-weight: 500; }
         .menu-item:hover, .menu-item.active { background: #1e293b; color: white; border-left: 4px solid var(--secondary); }
 
@@ -40,6 +42,7 @@
         main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         header { height: 70px; background: var(--white); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; border-bottom: 1px solid #e2e8f0; }
         .welcome-badge { background: #f1f5f9; padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+
         .container { padding: 25px; overflow-y: auto; flex: 1; }
 
         /* --- DASHBOARD --- */
@@ -47,16 +50,16 @@
         .stat-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
         .stat-card h3 { font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
         .stat-card p { font-size: 26px; font-weight: 800; color: var(--primary); }
-        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 
         /* --- TABELAS --- */
         .action-bar { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
         .search-box { position: relative; flex: 1; max-width: 400px; }
         .search-box i { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
         .search-box input { width: 100%; padding: 10px 10px 10px 45px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; }
+
         .table-container { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { background: #f8fafc; text-align: left; padding: 18px; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; text-align: left; padding: 18px; color: #64748b; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
         td { padding: 18px; border-bottom: 1px solid #f1f5f9; }
 
         /* --- BOTÕES --- */
@@ -70,10 +73,10 @@
 
         /* --- MODAL --- */
         .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 5000; backdrop-filter: blur(4px); }
-        .modal-content { background: white; padding: 35px; border-radius: 24px; width: 95%; max-width: 850px; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: white; padding: 35px; border-radius: 24px; width: 95%; max-width: 800px; max-height: 90vh; overflow-y: auto; }
         .modal-content label { display: block; margin-top: 15px; font-weight: 700; font-size: 13px; color: #475569; }
         .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
-        
+
         .item-list { background: #f8fafc; padding: 20px; border-radius: 16px; margin-top: 15px; border: 1px solid #e2e8f0; }
         .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 45px; gap: 12px; align-items: center; margin-bottom: 12px; }
 
@@ -86,9 +89,9 @@
         <div class="login-box">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/150x100?text=Thaynara+Logo'">
             <h2>Auto Vidros</h2>
-            <p>Sistema Pro 25.0</p>
-            <input type="text" id="loginUser" placeholder="Usuário (admin)">
-            <input type="password" id="loginPass" placeholder="Senha (123)">
+            <p>Gestão Pro 25.0</p>
+            <input type="text" id="loginUser" placeholder="Usuário">
+            <input type="password" id="loginPass" placeholder="Senha">
             <button onclick="handleLogin()">Entrar no Sistema</button>
             <div id="login-err" style="color:var(--danger); margin-top:15px; font-weight:600; display:none;">Login Inválido!</div>
         </div>
@@ -97,15 +100,16 @@
     <nav>
         <div class="nav-logo">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/100x70?text=LOGO'">
-            <h3>Thaynara</h3>
+            <h3>Sistema Pro</h3>
         </div>
         <div class="menu-item active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-line"></i> Dashboard</div>
         <div class="menu-item" onclick="showSection('ordem', this)"><i class="fas fa-file-invoice-dollar"></i> Ordens de Serviço</div>
         <div class="menu-item" onclick="showSection('venda_pecas', this)"><i class="fas fa-shopping-cart"></i> Venda de Peças</div>
         <div class="menu-item" onclick="showSection('clientes', this)"><i class="fas fa-users"></i> Clientes</div>
         <div class="menu-item" onclick="showSection('funcionarios', this)"><i class="fas fa-user-gear"></i> Funcionários</div>
-        <div class="menu-item" onclick="showSection('servicos', this)"><i class="fas fa-tools"></i> Catálogo Serviços</div>
-        <div class="menu-item" onclick="showSection('estoque', this)"><i class="fas fa-boxes-stacked"></i> Estoque Peças</div>
+        <div class="menu-item" onclick="showSection('estoque', this)"><i class="fas fa-boxes-stacked"></i> Estoque</div>
+        <div class="menu-item" onclick="showSection('servicos', this)"><i class="fas fa-tools"></i> Serviços</div>
+        <div class="menu-item" onclick="showSection('usuarios', this)"><i class="fas fa-shield-halved"></i> Usuários</div>
         <div style="margin-top: auto; padding: 0 20px;">
             <div class="menu-item" onclick="location.reload()" style="color: #fb7185;"><i class="fas fa-power-off"></i> Sair</div>
         </div>
@@ -122,14 +126,14 @@
         <div class="container">
             <section id="sec-dashboard">
                 <div class="stats-grid">
-                    <div class="stat-card"><h3>Total Oficina</h3><p id="dash-faturamento">R$ 0,00</p></div>
-                    <div class="stat-card"><h3>Total Vendas</h3><p id="dash-faturamento-pecas">R$ 0,00</p></div>
+                    <div class="stat-card"><h3>Faturamento Oficina</h3><p id="dash-faturamento">R$ 0,00</p></div>
+                    <div class="stat-card"><h3>Faturamento Peças</h3><p id="dash-faturamento-pecas">R$ 0,00</p></div>
                     <div class="stat-card"><h3>OS Realizadas</h3><p id="dash-os-count">0</p></div>
-                    <div class="stat-card"><h3>Clientes</h3><p id="dash-cli-count">0</p></div>
+                    <div class="stat-card"><h3>Clientes Ativos</h3><p id="dash-cli-count">0</p></div>
                 </div>
-                <div class="charts-container">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="stat-card"><h4>Peças Mais Vendidas</h4><canvas id="chartPecas"></canvas></div>
-                    <div class="stat-card"><h4>Mecânicos/Atendimentos</h4><canvas id="chartMec"></canvas></div>
+                    <div class="stat-card"><h4>Serviços/Mecânicos</h4><canvas id="chartMec"></canvas></div>
                 </div>
             </section>
 
@@ -137,6 +141,7 @@
                 <div class="action-bar">
                     <div class="search-box"><i class="fas fa-search"></i><input type="text" id="mainSearch" placeholder="Pesquisar..." onkeyup="filtrarTabela()"></div>
                     <div style="display:flex; gap:10px">
+                        <button class="btn btn-pdf" onclick="exportarTabelaPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
                         <button class="btn btn-add" onclick="openModal()"><i class="fas fa-plus"></i> Novo Cadastro</button>
                     </div>
                 </div>
@@ -157,12 +162,8 @@
     </div>
 
     <script>
-        // --- BANCO DE DADOS (LOCAL STORAGE) ---
-        const safeGet = (k, d) => {
-            try { return JSON.parse(localStorage.getItem(k)) || d; } 
-            catch(e) { return d; }
-        };
-
+        // --- BANCO DE DADOS ---
+        const safeGet = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
         let db = {
             clientes: safeGet('th_cli_v25', []),
             funcionarios: safeGet('th_func_v25', []),
@@ -170,20 +171,10 @@
             estoque: safeGet('th_est_v25', []),
             ordens: safeGet('th_ord_v25', []),
             vendas_pecas: safeGet('th_vp_v25', []),
-            usuarios: [{nome:"Admin", user:"admin", pass:"123"}]
+            usuarios: safeGet('th_user_v25', [{nome:"Admin", user:"admin", pass:"123", role:"admin"}])
         };
 
-        let currentSection = 'dashboard', editIndex = null, charts = {};
-
-        // MAPEAMENTO DE SEÇÃO PARA CHAVE DO BANCO
-        const mapa = {
-            ordem: "ordens",
-            venda_pecas: "vendas_pecas",
-            clientes: "clientes",
-            funcionarios: "funcionarios",
-            estoque: "estoque",
-            servicos: "servicos"
-        };
+        let currentSection = 'dashboard', editIndex = null, currentUser = null, chartRef = {};
 
         // --- LOGIN ---
         function handleLogin() {
@@ -192,12 +183,13 @@
             const user = db.usuarios.find(x => x.user === u && x.pass === p);
             
             if(user) {
-                document.getElementById('login-overlay').style.display='none';
+                currentUser = user;
+                document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('welcomeName').innerText = user.nome;
                 updateDashboard();
             } else {
-                document.getElementById('login-err').style.display='block';
-                setTimeout(() => document.getElementById('login-err').style.display='none', 2000);
+                document.getElementById('login-err').style.display = 'block';
+                setTimeout(() => document.getElementById('login-err').style.display = 'none', 2000);
             }
         }
 
@@ -219,19 +211,22 @@
             }
         }
 
-        // --- RENDERIZAR TABELA ---
+        // --- TABELAS ---
         function renderTable() {
             const head = document.getElementById('table-head'), body = document.getElementById('table-body');
             body.innerHTML = '';
+            
+            let mapa = { os: "ordens", ordem: "ordens", venda_pecas: "vendas_pecas" };
             let destino = mapa[currentSection] || currentSection;
             
             const cfgs = {
-                clientes: { h: ['Nome', 'Telefone', 'CPF'], f: ['nome', 'tel', 'cpf'] },
-                funcionarios: { h: ['Nome', 'Função', 'CPF'], f: ['nome', 'funcao', 'cpf'] },
+                clientes: { h: ['Nome', 'Telefone', 'Endereço'], f: ['nome', 'tel', 'endereco'] },
+                funcionarios: { h: ['Nome', 'Função', 'Endereço'], f: ['nome', 'funcao', 'endereco'] },
+                estoque: { h: ['Peça', 'Qtd', 'Preço'], f: ['modelo', 'qtd', 'preco'] },
                 servicos: { h: ['Serviço', 'Preço'], f: ['nome', 'preco'] },
-                estoque: { h: ['Marca', 'Modelo', 'Qtd'], f: ['marca', 'modelo', 'qtd'] },
-                ordem: { h: ['ID', 'Data', 'Cliente', 'Total'], f: ['id', 'data', 'cliente', 'total'] },
-                venda_pecas: { h: ['ID', 'Data', 'Cliente', 'Total'], f: ['id', 'data', 'cliente', 'total'] }
+                ordem: { h: ['ID', 'Cliente', 'Data', 'Total'], f: ['id', 'cliente', 'data', 'total'] },
+                venda_pecas: { h: ['ID', 'Cliente', 'Data', 'Total'], f: ['id', 'cliente', 'data', 'total'] },
+                usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
             };
 
             const cfg = cfgs[currentSection];
@@ -243,10 +238,8 @@
                 const tr = document.createElement('tr');
                 let botoes = `<button class="btn btn-edit btn-small" onclick="openModal(${i})"><i class="fas fa-edit"></i></button>`;
                 botoes += `<button class="btn btn-del btn-small" onclick="deleteItem(${i})"><i class="fas fa-trash"></i></button>`;
-                if(['ordem', 'venda_pecas'].includes(currentSection)) {
-                    botoes += `<button class="btn btn-pdf btn-small" onclick="gerarPDF(${i})"><i class="fas fa-file-pdf"></i></button>`;
-                }
-
+                if(['ordem', 'venda_pecas'].includes(currentSection)) botoes += `<button class="btn btn-pdf btn-small" onclick="gerarFichaPDF(${i})"><i class="fas fa-file-pdf"></i></button>`;
+                
                 tr.innerHTML = cfg.f.map(f => `<td>${item[f] || '-'}</td>`).join('') + `<td><div style="display:flex; gap:5px">${botoes}</div></td>`;
                 body.appendChild(tr);
             });
@@ -258,58 +251,46 @@
             const fields = document.getElementById('modal-fields'); fields.innerHTML = '';
             document.getElementById('modal').style.display = 'flex';
             
+            let mapa = { os: "ordens", ordem: "ordens", venda_pecas: "vendas_pecas" };
             let destino = mapa[currentSection] || currentSection;
-            const data = index !== null ? db[destino][index] : {};
+            const d = index !== null ? db[destino][index] : {};
 
-            if(currentSection === 'clientes') {
-                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Telefone</label><input id="f2" value="${data.tel||''}"> <label>CPF</label><input id="f3" value="${data.cpf||''}">`;
-            } else if(currentSection === 'funcionarios') {
-                fields.innerHTML = `<label>Nome</label><input id="f1" value="${data.nome||''}"> <label>Função</label><input id="f2" value="${data.funcao||''}"> <label>CPF</label><input id="f3" value="${data.cpf||''}">`;
+            if(currentSection === 'clientes' || currentSection === 'funcionarios') {
+                fields.innerHTML = `<label>Nome</label><input id="f1" value="${d.nome||''}">
+                                    <label>${currentSection==='clientes'?'Telefone':'Função'}</label><input id="f2" value="${d.tel||d.funcao||''}">
+                                    <label>Endereço</label><input id="f3" value="${d.endereco||''}">`;
             } else if(currentSection === 'estoque') {
-                fields.innerHTML = `<label>Marca</label><input id="f1" value="${data.marca||''}"> <label>Modelo</label><input id="f2" value="${data.modelo||''}"> <label>Quantidade</label><input id="f3" type="number" value="${data.qtd||'0'}"> <label>Preço Venda</label><input id="f4" type="number" value="${data.preco||'0'}">`;
+                fields.innerHTML = `<label>Marca</label><input id="f1" value="${d.marca||''}"> <label>Modelo</label><input id="f2" value="${d.modelo||''}"> <label>Qtd</label><input id="f3" type="number" value="${d.qtd||''}"> <label>Preço Venda</label><input id="f4" type="number" value="${d.preco||''}">`;
             } else if(currentSection === 'servicos') {
-                fields.innerHTML = `<label>Nome do Serviço</label><input id="f1" value="${data.nome||''}"> <label>Preço</label><input id="f2" type="number" value="${data.preco||'0'}">`;
+                fields.innerHTML = `<label>Serviço</label><input id="f1" value="${d.nome||''}"> <label>Preço</label><input id="f2" type="number" value="${d.preco||''}">`;
             } else if(['ordem', 'venda_pecas'].includes(currentSection)) {
-                const clientes = db.clientes.map(c => `<option value="${c.nome}" ${data.cliente===c.nome?'selected':''}>${c.nome}</option>`).join('');
-                const mecs = db.funcionarios.map(f => `<option value="${f.nome}" ${data.mecanico===f.nome?'selected':''}>${f.nome}</option>`).join('');
-                
-                fields.innerHTML = `
-                    <label>Cliente</label><select id="f1"><option value="Consumidor">Consumidor Final</option>${clientes}</select>
-                    ${currentSection === 'ordem' ? `<label>Mecânico Responsável</label><select id="fMec"><option value="">Selecione...</option>${mecs}</select> <label>Veículo</label><input id="fVeic" value="${data.veiculo||''}">` : ''}
-                    <div class="item-list">
-                        <h4>Itens / Peças</h4>
-                        <div id="row-container"></div>
-                        <button class="btn btn-add btn-small" style="margin-top:10px" onclick="addItemRow()">+ Adicionar Item</button>
-                    </div>
-                    <h2 style="margin-top:20px; color:var(--secondary)">Total: R$ <span id="displayTotal">0.00</span></h2>
-                    <input type="hidden" id="fTotal" value="0">`;
-                
-                if(index !== null && data.itens) {
-                    data.itens.forEach(it => addItemRow(it));
-                } else {
-                    addItemRow();
-                }
+                const clis = db.clientes.map(c => `<option value="${c.nome}" ${d.cliente===c.nome?'selected':''}>${c.nome}</option>`).join('');
+                const mecs = db.funcionarios.map(f => `<option value="${f.nome}" ${d.mecanico===f.nome?'selected':''}>${f.nome}</option>`).join('');
+                fields.innerHTML = `<label>Cliente</label><select id="fCli"><option value="Consumidor">Consumidor Final</option>${clis}</select>
+                                    ${currentSection==='ordem'?`<label>Mecânico</label><select id="fMec"><option value="">Selecione...</option>${mecs}</select><label>Veículo</label><input id="fVeic" value="${d.veiculo||''}">`:''}
+                                    <div class="item-list"><h4>Itens</h4><div id="item-rows"></div><button class="btn btn-add btn-small" onclick="addItemRow()">+ Adicionar Item</button></div>
+                                    <h3 style="margin-top:15px; color:var(--secondary)">Total: R$ <span id="displayTotal">0.00</span></h3><input type="hidden" id="fTotal">`;
+                if(d.itens) d.itens.forEach(it => addItemRow(it)); else addItemRow();
+            } else if(currentSection === 'usuarios') {
+                const canEditLogin = (currentUser.role === 'admin' || currentUser.user === d.user);
+                fields.innerHTML = `<label>Nome</label><input id="u1" value="${d.nome||''}">
+                                    <label>Login</label><input id="u2" value="${d.user||''}" ${!canEditLogin && editIndex!==null ? 'disabled':''}>
+                                    <label>Senha</label><input id="u3" type="password" value="${d.pass||''}">
+                                    ${currentUser.role==='admin' ? `<label>Perfil</label><select id="u4"><option value="user" ${d.role==='user'?'selected':''}>Usuário Comum</option><option value="admin" ${d.role==='admin'?'selected':''}>Administrador</option></select>` : ''}`;
             }
             calcTotal();
         }
 
         function addItemRow(data = null) {
-            const container = document.getElementById('row-container');
+            const container = document.getElementById('item-rows');
             const div = document.createElement('div');
             div.className = 'item-row';
-            
-            const pecas = db.estoque.map(p => `<option value="${p.preco}" data-name="${p.modelo}" ${data && data.nome === p.modelo ? 'selected' : ''}>${p.modelo} (R$ ${p.preco})</option>`).join('');
-            const servs = db.servicos.map(s => `<option value="${s.preco}" data-name="${s.nome}" ${data && data.nome === s.nome ? 'selected' : ''}>${s.nome} (R$ ${s.preco})</option>`).join('');
-
-            div.innerHTML = `
-                <select class="item-sel" onchange="calcTotal()">
-                    <option value="0">Selecione...</option>
-                    <optgroup label="Peças">${pecas}</optgroup>
-                    <optgroup label="Serviços">${servs}</optgroup>
-                </select>
-                <input type="number" class="item-qty" value="${data?data.qty:1}" min="1" onchange="calcTotal()">
-                <input type="text" class="item-sub" readonly value="0.00">
-                <button class="btn btn-del btn-small" onclick="this.parentElement.remove(); calcTotal();">X</button>`;
+            const ops = db.estoque.map(e => `<option value="${e.preco}" data-name="${e.modelo}" ${data && data.nome===e.modelo?'selected':''}>${e.modelo} (R$ ${e.preco})</option>`).join('') +
+                        db.servicos.map(s => `<option value="${s.preco}" data-name="${s.nome}" ${data && data.nome===s.nome?'selected':''}>${s.nome} (R$ ${s.preco})</option>`).join('');
+            div.innerHTML = `<select class="i-sel" onchange="calcTotal()"><option value="0">Selecione...</option>${ops}</select>
+                             <input type="number" class="i-qty" value="${data?data.qty:1}" min="1" onchange="calcTotal()">
+                             <input type="text" class="i-sub" readonly value="0.00">
+                             <button class="btn btn-del btn-small" onclick="this.parentElement.remove(); calcTotal();">X</button>`;
             container.appendChild(div);
             calcTotal();
         }
@@ -317,160 +298,133 @@
         function calcTotal() {
             let total = 0;
             document.querySelectorAll('.item-row').forEach(row => {
-                const p = parseFloat(row.querySelector('.item-sel').value) || 0;
-                const q = parseInt(row.querySelector('.item-qty').value) || 1;
+                const p = parseFloat(row.querySelector('.i-sel').value) || 0;
+                const q = parseInt(row.querySelector('.i-qty').value) || 0;
                 const sub = p * q;
-                row.querySelector('.item-sub').value = sub.toFixed(2);
+                row.querySelector('.i-sub').value = sub.toFixed(2);
                 total += sub;
             });
             if(document.getElementById('displayTotal')) document.getElementById('displayTotal').innerText = total.toFixed(2);
             if(document.getElementById('fTotal')) document.getElementById('fTotal').value = total.toFixed(2);
         }
 
-        // --- SALVAR DADOS ---
+        // --- SALVAMENTO ---
         function handleSave() {
             try {
-                const getV = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+                const v = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+                let mapa = { os: "ordens", ordem: "ordens", venda_pecas: "vendas_pecas" };
                 let destino = mapa[currentSection] || currentSection;
                 let obj = {};
 
                 if(['ordem', 'venda_pecas'].includes(currentSection)) {
-                    const itens = [];
+                    let itens = [];
                     document.querySelectorAll('.item-row').forEach(row => {
-                        const sel = row.querySelector('.item-sel');
-                        if(sel.selectedIndex > 0) {
-                            itens.push({
-                                nome: sel.options[sel.selectedIndex].getAttribute('data-name'),
-                                price: parseFloat(sel.value),
-                                qty: parseInt(row.querySelector('.item-qty').value)
-                            });
+                        const sel = row.querySelector('.i-sel');
+                        if(sel.value !== "0") {
+                            itens.push({ nome: sel.options[sel.selectedIndex].getAttribute('data-name'), price: parseFloat(sel.value), qty: parseInt(row.querySelector('.i-qty').value) });
                         }
                     });
-
-                    obj = {
-                        id: editIndex !== null ? db[destino][editIndex].id : "ID" + Date.now().toString().slice(-4),
-                        data: new Date().toLocaleDateString(),
-                        cliente: getV('f1'),
-                        total: getV('fTotal'),
-                        itens: itens
-                    };
-                    if(currentSection === 'ordem') {
-                        obj.mecanico = getV('fMec');
-                        obj.veiculo = getV('fVeic');
-                    }
-                } else if(currentSection === 'clientes') {
-                    obj = { nome: getV('f1'), tel: getV('f2'), cpf: getV('f3') };
-                } else if(currentSection === 'funcionarios') {
-                    obj = { nome: getV('f1'), funcao: getV('f2'), cpf: getV('f3') };
+                    obj = { id: editIndex!==null?db[destino][editIndex].id: "N"+Math.floor(Math.random()*9000), cliente: v('fCli'), data: new Date().toLocaleDateString(), total: v('fTotal'), itens: itens };
+                    if(currentSection==='ordem') { obj.mecanico = v('fMec'); obj.veiculo = v('fVeic'); }
+                } else if(currentSection === 'clientes' || currentSection === 'funcionarios') {
+                    obj = { nome: v('f1'), endereco: v('f3') };
+                    if(currentSection==='clientes') obj.tel = v('f2'); else obj.funcao = v('f2');
                 } else if(currentSection === 'estoque') {
-                    obj = { marca: getV('f1'), modelo: getV('f2'), qtd: getV('f3'), preco: getV('f4') };
+                    obj = { marca: v('f1'), modelo: v('f2'), qtd: v('f3'), preco: v('f4') };
                 } else if(currentSection === 'servicos') {
-                    obj = { nome: getV('f1'), preco: getV('f2') };
+                    obj = { nome: v('f1'), preco: v('f2') };
+                } else if(currentSection === 'usuarios') {
+                    obj = { nome: v('u1'), user: v('u2'), pass: v('u3'), role: document.getElementById('u4') ? v('u4') : db.usuarios[editIndex].role };
                 }
 
-                if(editIndex !== null) db[destino][editIndex] = obj;
-                else db[destino].push(obj);
+                if(!db[destino]) db[destino] = [];
+                if(editIndex !== null) db[destino][editIndex] = obj; else db[destino].push(obj);
 
-                // Salva no LocalStorage
-                localStorage.setItem('th_cli_v25', JSON.stringify(db.clientes));
-                localStorage.setItem('th_func_v25', JSON.stringify(db.funcionarios));
-                localStorage.setItem('th_est_v25', JSON.stringify(db.estoque));
-                localStorage.setItem('th_serv_v25', JSON.stringify(db.servicos));
-                localStorage.setItem('th_ord_v25', JSON.stringify(db.ordens));
-                localStorage.setItem('th_vp_v25', JSON.stringify(db.vendas_pecas));
+                localStorage.setItem(`th_${destino === 'ordens' ? 'ord' : (destino === 'vendas_pecas' ? 'vp' : (destino === 'usuarios' ? 'user' : destino.slice(0,3)))}_v25`, JSON.stringify(db[destino]));
+                saveAll(); closeModal(); renderTable(); updateDashboard();
+            } catch (e) { alert("Erro ao salvar dados!"); console.log(e); }
+        }
 
-                closeModal();
-                renderTable();
-                updateDashboard();
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao salvar. Verifique se todos os campos estão preenchidos.");
-            }
+        function saveAll() {
+            localStorage.setItem('th_cli_v25', JSON.stringify(db.clientes));
+            localStorage.setItem('th_func_v25', JSON.stringify(db.funcionarios));
+            localStorage.setItem('th_est_v25', JSON.stringify(db.estoque));
+            localStorage.setItem('th_serv_v25', JSON.stringify(db.servicos));
+            localStorage.setItem('th_ord_v25', JSON.stringify(db.ordens));
+            localStorage.setItem('th_vp_v25', JSON.stringify(db.vendas_pecas));
+            localStorage.setItem('th_user_v25', JSON.stringify(db.usuarios));
         }
 
         function deleteItem(i) {
-            if(confirm("Deseja excluir este registro?")) {
+            if(confirm("Excluir registro?")) {
+                let mapa = { os: "ordens", ordem: "ordens", venda_pecas: "vendas_pecas" };
                 let destino = mapa[currentSection] || currentSection;
                 db[destino].splice(i, 1);
-                handleSave(); // Reutiliza a lógica de salvar para atualizar o LocalStorage
+                saveAll(); renderTable(); updateDashboard();
             }
         }
 
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        // --- DASHBOARD E GRÁFICOS ---
+        // --- DASHBOARD ---
         function updateDashboard() {
-            const fOS = db.ordens.reduce((a, b) => a + parseFloat(b.total), 0);
-            const fVP = db.vendas_pecas.reduce((a, b) => a + parseFloat(b.total), 0);
-            
+            const fOS = db.ordens.reduce((a, b) => a + parseFloat(b.total || 0), 0);
+            const fVP = db.vendas_pecas.reduce((a, b) => a + parseFloat(b.total || 0), 0);
             document.getElementById('dash-faturamento').innerText = `R$ ${fOS.toFixed(2)}`;
             document.getElementById('dash-faturamento-pecas').innerText = `R$ ${fVP.toFixed(2)}`;
             document.getElementById('dash-os-count').innerText = db.ordens.length;
             document.getElementById('dash-cli-count').innerText = db.clientes.length;
-
+            
             renderCharts();
         }
 
         function renderCharts() {
-            const pecaData = {}, mecData = {};
-            
-            // Consolida dados de todas as OS e Vendas
-            [...db.ordens, ...db.vendas_pecas].forEach(v => {
-                if(v.itens) v.itens.forEach(it => {
-                    pecaData[it.nome] = (pecaData[it.nome] || 0) + it.qty;
-                });
-                if(v.mecanico) {
-                    mecData[v.mecanico] = (mecData[v.mecanico] || 0) + 1;
-                }
+            const pMap = {}, mMap = {};
+            [...db.ordens, ...db.vendas_pecas].forEach(x => {
+                if(x.itens) x.itens.forEach(it => pMap[it.nome] = (pMap[it.nome]||0) + it.qty);
+                if(x.mecanico) mMap[x.mecanico] = (mMap[x.mecanico]||0) + 1;
             });
 
-            const createChart = (id, data, label, color) => {
-                if(charts[id]) charts[id].destroy();
+            const draw = (id, data, label, color) => {
+                if(chartRef[id]) chartRef[id].destroy();
                 const ctx = document.getElementById(id).getContext('2d');
-                charts[id] = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(data),
-                        datasets: [{ label: label, data: Object.values(data), backgroundColor: color }]
-                    },
-                    options: { responsive: true }
-                });
+                chartRef[id] = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(data), datasets: [{ label: label, data: Object.values(data), backgroundColor: color }] } });
             };
-
-            createChart('chartPecas', pecaData, 'Qtd Vendida', '#3b82f6');
-            createChart('chartMec', mecData, 'Serviços Realizados', '#10b981');
+            draw('chartPecas', pMap, 'Peças Vendidas', '#3b82f6');
+            draw('chartMec', mMap, 'Atendimentos/Serviços', '#10b981');
         }
 
         // --- PDF ---
-        function gerarPDF(i) {
+        function gerarFichaPDF(i) {
             const { jsPDF } = window.jspdf;
+            let mapa = { os: "ordens", ordem: "ordens", venda_pecas: "vendas_pecas" };
             let destino = mapa[currentSection] || currentSection;
             const data = db[destino][i];
             const doc = new jsPDF();
+            
+            doc.setFontSize(22); doc.text("THAYNARA AUTO VIDROS", 105, 20, {align:'center'});
+            doc.setFontSize(10); doc.text(`EMISSÃO: ${new Date().toLocaleString()}`, 105, 27, {align:'center'});
+            doc.line(20, 32, 190, 32);
+            doc.text(`CLIENTE: ${data.cliente} | DATA: ${data.data}`, 20, 42);
+            if(data.veiculo) doc.text(`VEÍCULO: ${data.veiculo} | MECÂNICO: ${data.mecanico}`, 20, 48);
 
-            doc.setFontSize(20);
-            doc.text("THAYNARA AUTO VIDROS", 105, 20, {align:'center'});
-            doc.setFontSize(10);
-            doc.text(`Documento: ${currentSection.toUpperCase()} | Data: ${data.data}`, 20, 35);
-            doc.text(`Cliente: ${data.cliente}`, 20, 42);
-            if(data.veiculo) doc.text(`Veículo: ${data.veiculo} | Mecânico: ${data.mecanico}`, 20, 49);
-
-            const rows = data.itens.map(it => [it.nome, it.qty, `R$ ${it.price.toFixed(2)}`, `R$ ${(it.qty*it.price).toFixed(2)}`]);
-            doc.autoTable({
-                startY: 55,
-                head: [['Item', 'Qtd', 'Unitário', 'Subtotal']],
-                body: rows
-            });
-
+            doc.autoTable({ startY: 55, head: [['Item', 'Qtd', 'Preço', 'Subtotal']], body: data.itens.map(it => [it.nome, it.qty, `R$ ${it.price.toFixed(2)}`, `R$ ${(it.qty*it.price).toFixed(2)}`]) });
             doc.text(`TOTAL GERAL: R$ ${parseFloat(data.total).toFixed(2)}`, 190, doc.autoTable.previous.finalY + 10, {align:'right'});
             doc.save(`Recibo_${data.id}.pdf`);
         }
 
+        function exportarTabelaPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let destino = mapa[currentSection] || currentSection;
+            doc.text(`Relatório de ${currentSection.toUpperCase()}`, 14, 15);
+            doc.autoTable({ startY: 20, head: [Object.keys(db[destino][0] || {})], body: db[destino].map(obj => Object.values(obj)) });
+            doc.save(`Relatorio_${currentSection}.pdf`);
+        }
+
         function filtrarTabela() {
-            const term = document.getElementById('mainSearch').value.toLowerCase();
-            document.querySelectorAll('#table-body tr').forEach(tr => {
-                tr.style.display = tr.innerText.toLowerCase().includes(term) ? '' : 'none';
-            });
+            const val = document.getElementById('mainSearch').value.toLowerCase();
+            document.querySelectorAll('#table-body tr').forEach(tr => tr.style.display = tr.innerText.toLowerCase().includes(val) ? '' : 'none');
         }
 
         window.onload = updateDashboard;
