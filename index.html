@@ -196,4 +196,192 @@
                 document.getElementById('sec-dashboard').classList.remove('hidden');
                 updateDashboard();
             } else {
-                document.getElementById('sec-tabelas').classList.re
+                document.getElementById('sec-tabelas').classList.remove('hidden');
+                renderTable();
+            }
+        }
+
+        // Renderização de Tabelas
+        function renderTable() {
+            const head = document.getElementById('table-head');
+            const body = document.getElementById('table-body');
+            body.innerHTML = '';
+            
+            const configs = {
+                clientes: { h: ['Nome', 'Telefone', 'Endereço'], f: ['nome', 'tel', 'endereco'] },
+                funcionarios: { h: ['Nome', 'Telefone', 'Função'], f: ['nome', 'tel', 'funcao'] },
+                servicos: { h: ['Serviço', 'Valor M.O.'], f: ['nome', 'preco'] },
+                estoque: { h: ['Peça', 'Marca', 'Qtd', 'Preço'], f: ['nome', 'marca', 'qtd', 'preco'] },
+                ordem: { h: ['ID', 'Cliente', 'Detalhes', 'Total'], f: ['id', 'cliente', 'resumo', 'total'] },
+                usuarios: { h: ['Nome', 'Login'], f: ['nome', 'user'] }
+            };
+
+            const cfg = configs[currentSection];
+            head.innerHTML = `<tr>${cfg.h.map(x => `<th>${x}</th>`).join('')}<th>Ações</th></tr>`;
+
+            db[currentSection].forEach((item, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = cfg.f.map(field => `<td>${item[field] || '-'}</td>`).join('') + 
+                    `<td>
+                        <button class="btn btn-edit" onclick="openModal(${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-del" onclick="deleteItem(${i})"><i class="fas fa-trash"></i></button>
+                    </td>`;
+                body.appendChild(tr);
+            });
+        }
+
+        // Modais
+        function openModal(index = null) {
+            editIndex = index;
+            const fields = document.getElementById('modal-fields');
+            fields.innerHTML = '';
+            document.getElementById('modal').style.display = 'flex';
+            const data = index !== null ? db[currentSection][index] : {};
+
+            if(currentSection === 'clientes') {
+                fields.innerHTML = `
+                    <label>Nome Completo</label><input id="f1" value="${data.nome || ''}">
+                    <label>Telefone</label><input id="f2" value="${data.tel || ''}">
+                    <label>Endereço</label><input id="f3" value="${data.endereco || ''}">`;
+            } else if(currentSection === 'funcionarios') {
+                fields.innerHTML = `
+                    <label>Nome do Funcionário</label><input id="f1" value="${data.nome || ''}">
+                    <label>Telefone</label><input id="f2" value="${data.tel || ''}">
+                    <label>Função</label><input id="f3" value="${data.funcao || ''}">
+                    <label>CPF/RG</label><input id="f4" value="${data.doc || ''}">`;
+            } else if(currentSection === 'servicos') {
+                fields.innerHTML = `
+                    <label>Descrição do Serviço</label><input id="f1" value="${data.nome || ''}">
+                    <label>Preço Mão de Obra (R$)</label><input id="f2" type="number" value="${data.preco || ''}">`;
+            } else if(currentSection === 'estoque') {
+                fields.innerHTML = `
+                    <label>Nome da Peça</label><input id="f1" value="${data.nome || ''}">
+                    <label>Marca/Modelo</label><input id="f2" value="${data.marca || ''}">
+                    <label>Qtd em Estoque</label><input id="f3" type="number" value="${data.qtd || ''}">
+                    <label>Preço Unitário (Venda)</label><input id="f4" type="number" value="${data.preco || ''}">`;
+            } else if(currentSection === 'usuarios') {
+                fields.innerHTML = `
+                    <label>Nome Completo</label><input id="f1" value="${data.nome || ''}">
+                    <label>Login</label><input id="f2" value="${data.user || ''}">
+                    <label>Senha</label><input id="f3" type="password" value="${data.pass || ''}">`;
+            } else if(currentSection === 'ordem') {
+                const cliOpt = db.clientes.map(c => `<option ${data.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
+                const servOpt = db.servicos.map(s => `<option value="${s.preco}">${s.nome} (R$ ${s.preco})</option>`).join('');
+                const pecOpt = db.estoque.map(p => `<option value="${p.preco}">${p.nome} - ${p.marca} (R$ ${p.preco})</option>`).join('');
+
+                fields.innerHTML = `
+                    <label>Selecionar Cliente</label><select id="f1">${cliOpt}</select>
+                    <label>Veículo (Placa/Modelo)</label><input id="f2" value="${data.veiculo || ''}">
+                    
+                    <div class="os-box">
+                        <p style="font-weight:bold; margin-bottom:10px; font-size:14px;">O que será cobrado?</p>
+                        <div style="display:flex; gap:20px; margin-bottom:15px;">
+                            <label style="display:inline"><input type="checkbox" id="usePeça" onchange="calcTotalOS()"> Venda de Peça</label>
+                            <label style="display:inline"><input type="checkbox" id="useMao" onchange="calcTotalOS()"> Mão de Obra</label>
+                        </div>
+                        
+                        <label>Peça:</label>
+                        <select id="selPeça" onchange="calcTotalOS()">${pecOpt}</select>
+                        
+                        <label>Serviço:</label>
+                        <select id="selServ" onchange="calcTotalOS()">${servOpt}</select>
+                    </div>
+
+                    <h3 style="margin-top:20px; color:var(--secondary)">Total Geral: R$ <span id="displayTotal">0,00</span></h3>
+                    <input type="hidden" id="fTotal" value="0">
+                `;
+                if(index !== null) setTimeout(calcTotalOS, 100);
+            }
+        }
+
+        // Lógica de Soma da OS
+        function calcTotalOS() {
+            const pPeça = parseFloat(document.getElementById('selPeça').value) || 0;
+            const pMao = parseFloat(document.getElementById('selServ').value) || 0;
+            const incPeça = document.getElementById('usePeça').checked;
+            const incMao = document.getElementById('useMao').checked;
+
+            let soma = 0;
+            if(incPeça) soma += pPeça;
+            if(incMao) soma += pMao;
+
+            document.getElementById('displayTotal').innerText = soma.toLocaleString('pt-br', {minimumFractionDigits:2});
+            document.getElementById('fTotal').value = soma.toFixed(2);
+        }
+
+        // Salvar Dados
+        function handleSave() {
+            const v = (id) => document.getElementById(id)?.value;
+            let obj = {};
+
+            if(currentSection === 'clientes') obj = {nome: v('f1'), tel: v('f2'), endereco: v('f3')};
+            if(currentSection === 'funcionarios') obj = {nome: v('f1'), tel: v('f2'), funcao: v('f3'), doc: v('f4')};
+            if(currentSection === 'servicos') obj = {nome: v('f1'), preco: v('f2')};
+            if(currentSection === 'estoque') obj = {nome: v('f1'), marca: v('f2'), qtd: v('f3'), preco: v('f4')};
+            if(currentSection === 'usuarios') obj = {nome: v('f1'), user: v('f2'), pass: v('f3')};
+            if(currentSection === 'ordem') {
+                const sP = document.getElementById('selPeça');
+                const sS = document.getElementById('selServ');
+                const pNome = document.getElementById('usePeça').checked ? sP.options[sP.selectedIndex].text.split(' (')[0] : "";
+                const sNome = document.getElementById('useMao').checked ? sS.options[sS.selectedIndex].text.split(' (')[0] : "";
+                
+                obj = {
+                    id: Date.now().toString().slice(-5),
+                    cliente: v('f1'),
+                    veiculo: v('f2'),
+                    total: v('fTotal'),
+                    resumo: (pNome + " " + sNome).trim() || "Venda Direta",
+                    data: new Date().toLocaleDateString()
+                };
+            }
+
+            if(editIndex !== null) db[currentSection][editIndex] = obj;
+            else db[currentSection].push(obj);
+
+            persist();
+            closeModal();
+            renderTable();
+        }
+
+        function deleteItem(i) {
+            if(confirm("Deseja realmente excluir?")) {
+                db[currentSection].splice(i, 1);
+                persist();
+                renderTable();
+            }
+        }
+
+        function persist() {
+            localStorage.setItem('th_cli', JSON.stringify(db.clientes));
+            localStorage.setItem('th_func', JSON.stringify(db.funcionarios));
+            localStorage.setItem('th_serv', JSON.stringify(db.servicos));
+            localStorage.setItem('th_est', JSON.stringify(db.estoque));
+            localStorage.setItem('th_ord', JSON.stringify(db.ordens));
+            localStorage.setItem('th_users', JSON.stringify(db.usuarios));
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        // Dashboard
+        function updateDashboard() {
+            const total = db.ordens.reduce((a, b) => a + parseFloat(b.total), 0);
+            document.getElementById('dash-faturamento').innerText = `R$ ${total.toLocaleString('pt-br', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-os-count').innerText = db.ordens.length;
+            document.getElementById('dash-cli-count').innerText = db.clientes.length;
+
+            const canvas = document.getElementById('vendasChart');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if(chartInstance) chartInstance.destroy();
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: db.ordens.slice(-5).map(o => o.id),
+                        datasets: [{ label: 'Últimas O.S. (R$)', data: db.ordens.slice(-5).map(o => o.total), backgroundColor: '#3b82f6' }]
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
