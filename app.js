@@ -821,6 +821,7 @@ function handleSave() {
 
   saveAll();
   closeModal();
+  alert(dbKey === 'ordens' ? 'Ordem de Serviço salva com sucesso!' : 'Registro salvo com sucesso!');
 
   // Atualizações de tela isoladas contra falhas de renderização
   try { renderTable(); } catch (e) { console.warn("[UI] Erro renderTable:", e); }
@@ -1112,3 +1113,7 @@ function importarBackupJSON(event) {
 window.onload = () => {
   updateDashboard();
 };
+
+window.db = db;
+window.StorageService = StorageService;
+window.InventoryService = InventoryService;
