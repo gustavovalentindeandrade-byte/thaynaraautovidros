@@ -1,10 +1,10 @@
 /**
  * THAYNARA AUTO VIDROS - GESTÃO PROFISSIONAL PRO 25.0
- * Módulo Principal: app.js
+ * Módulo Principal: app.js (Versão Blindada e Resiliente)
  */
 
 // ==========================================
-// 1. BANCO DE DADOS E PERSISTÊNCIA (LOCALSTORAGE)
+// 1. BANCO DE DADOS E PERSISTÊNCIA
 // ==========================================
 const safeLoad = (key, defaultVal) => {
   try {
@@ -30,40 +30,65 @@ let currentFilterStatus = 'TODOS';
 let editIndex = null;
 let chartInstances = {};
 
+function getSectionDbKey(sec) {
+  if (sec === 'ordem' || sec === 'ordens') return 'ordens';
+  if (sec === 'venda_pecas' || sec === 'vendas_pecas') return 'vendas_pecas';
+  return sec;
+}
+
 function saveDatabase() {
-  localStorage.setItem('th_cli_v25', JSON.stringify(db.clientes));
-  localStorage.setItem('th_func_v25', JSON.stringify(db.funcionarios));
-  localStorage.setItem('th_serv_v25', JSON.stringify(db.servicos));
-  localStorage.setItem('th_est_v25', JSON.stringify(db.estoque));
-  localStorage.setItem('th_ord_v25', JSON.stringify(db.ordens));
-  localStorage.setItem('th_vp_v25', JSON.stringify(db.vendas_pecas));
-  localStorage.setItem('th_user_v25', JSON.stringify(db.usuarios));
+  try {
+    localStorage.setItem('th_cli_v25', JSON.stringify(db.clientes));
+    localStorage.setItem('th_func_v25', JSON.stringify(db.funcionarios));
+    localStorage.setItem('th_serv_v25', JSON.stringify(db.servicos));
+    localStorage.setItem('th_est_v25', JSON.stringify(db.estoque));
+    localStorage.setItem('th_ord_v25', JSON.stringify(db.ordens));
+    localStorage.setItem('th_vp_v25', JSON.stringify(db.vendas_pecas));
+    localStorage.setItem('th_user_v25', JSON.stringify(db.usuarios));
+  } catch (e) {
+    console.warn("Erro ao gravar no localStorage:", e);
+  }
+}
+
+// Auxiliar seguro para atualizar texto no DOM sem disparar erro se o elemento não existir
+function setSafeText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = text;
 }
 
 // ==========================================
 // 2. AUTENTICAÇÃO E SESSÃO
 // ==========================================
 function handleLogin() {
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value.trim();
-  const user = db.usuarios.find(x => x.user === u && x.pass === p);
+  const inputU = document.getElementById('loginUser');
+  const inputP = document.getElementById('loginPass');
+  const u = inputU ? inputU.value.trim() : '';
+  const p = inputP ? inputP.value.trim() : '';
+  
+  const user = (db.usuarios || []).find(x => x.user === u && x.pass === p);
 
   if (user) {
-    document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('welcomeName').innerText = user.nome;
+    const overlay = document.getElementById('login-overlay');
+    if (overlay) overlay.style.display = 'none';
+    setSafeText('welcomeName', user.nome);
     updateDashboard();
   } else {
     const err = document.getElementById('login-err');
-    err.style.display = 'block';
-    setTimeout(() => err.style.display = 'none', 2500);
+    if (err) {
+      err.style.display = 'block';
+      setTimeout(() => err.style.display = 'none', 2500);
+    }
   }
 }
 
 function handleLogout() {
   if (confirm("Deseja sair da sua sessão no sistema?")) {
-    document.getElementById('loginUser').value = '';
-    document.getElementById('loginPass').value = '';
-    document.getElementById('login-overlay').style.display = 'flex';
+    const u = document.getElementById('loginUser');
+    const p = document.getElementById('loginPass');
+    if (u) u.value = '';
+    if (p) p.value = '';
+    const overlay = document.getElementById('login-overlay');
+    if (overlay) overlay.style.display = 'flex';
   }
 }
 
@@ -73,12 +98,14 @@ function handleLogout() {
 function showSection(sec, el) {
   currentSection = sec;
   currentFilterStatus = 'TODOS';
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .menu-item').forEach(item => item.classList.remove('active'));
   if (el) el.classList.add('active');
 
   const titles = {
     dashboard: "Painel Geral e Indicadores",
-    ordens: "Ordens de Serviço e Controle de Pedidos",
+    ordem: "Ordens de Serviço e Pedidos",
+    ordens: "Ordens de Serviço e Pedidos",
+    venda_pecas: "Vendas de Peças (Balcão)",
     vendas_pecas: "Vendas de Peças (Balcão)",
     clientes: "Gestão de Clientes",
     funcionarios: "Equipe e Mecânicos",
@@ -87,22 +114,25 @@ function showSection(sec, el) {
     usuarios: "Usuários e Segurança"
   };
 
-  document.getElementById('page-title').innerHTML = titles[sec] || "Auto Vidros Pro";
-  document.getElementById('sec-dashboard').classList.add('hidden');
-  document.getElementById('sec-tabelas').classList.add('hidden');
+  setSafeText('page-title', titles[sec] || "Auto Vidros Pro");
 
-  // Exibir ou ocultar filtros de status de OS
+  const secDash = document.getElementById('sec-dashboard');
+  const secTab = document.getElementById('sec-tabelas');
+  if (secDash) secDash.classList.add('hidden');
+  if (secTab) secTab.classList.add('hidden');
+
   const filterContainer = document.getElementById('filter-pills-container');
   if (filterContainer) {
-    filterContainer.style.display = (sec === 'ordens') ? 'flex' : 'none';
+    filterContainer.style.display = (sec === 'ordens' || sec === 'ordem') ? 'flex' : 'none';
   }
 
   if (sec === 'dashboard') {
-    document.getElementById('sec-dashboard').classList.remove('hidden');
+    if (secDash) secDash.classList.remove('hidden');
     updateDashboard();
   } else {
-    document.getElementById('sec-tabelas').classList.remove('hidden');
-    document.getElementById('mainSearch').value = '';
+    if (secTab) secTab.classList.remove('hidden');
+    const search = document.getElementById('mainSearch');
+    if (search) search.value = '';
     renderTable();
   }
 }
@@ -115,12 +145,15 @@ function setFilterStatus(status, btn) {
 }
 
 // ==========================================
-// 4. RENDERIZAÇÃO DE TABELAS E STATUS
+// 4. RENDERIZAÇÃO DE TABELAS
 // ==========================================
 function renderTable() {
   const head = document.getElementById('table-head');
   const body = document.getElementById('table-body');
+  if (!head || !body) return;
   body.innerHTML = '';
+
+  const dbKey = getSectionDbKey(currentSection);
 
   const tableConfigs = {
     clientes: {
@@ -153,15 +186,14 @@ function renderTable() {
     }
   };
 
-  const cfg = tableConfigs[currentSection];
+  const cfg = tableConfigs[dbKey];
   if (!cfg) return;
 
   head.innerHTML = `<tr>${cfg.headers.map(h => `<th>${h}</th>`).join('')}<th style="text-align:center; width:160px;">Ações</th></tr>`;
 
-  let lista = db[currentSection] || [];
+  let lista = db[dbKey] || [];
 
-  // Filtro por status para Ordens de Serviço
-  if (currentSection === 'ordens' && currentFilterStatus !== 'TODOS') {
+  if (dbKey === 'ordens' && currentFilterStatus !== 'TODOS') {
     lista = lista.filter(item => (item.status || 'Orçamento') === currentFilterStatus);
   }
 
@@ -180,6 +212,10 @@ function renderTable() {
         val = `R$ ${parseFloat(val || 0).toFixed(2)}`;
       }
 
+      if (f === 'dataHora') {
+        val = item.dataHora || item.data || '-';
+      }
+
       if (f === 'margem') {
         const custo = parseFloat(item.custo) || 0;
         const venda = parseFloat(item.preco) || 0;
@@ -187,7 +223,7 @@ function renderTable() {
         val = `<span style="font-weight:700; color:#15803d;">+${mg}%</span>`;
       }
 
-      if (f === 'status' && currentSection === 'estoque') {
+      if (f === 'status' && dbKey === 'estoque') {
         const min = parseInt(item.minimo) || 2;
         const qtd = parseInt(item.qtd) || 0;
         val = qtd <= min
@@ -195,8 +231,7 @@ function renderTable() {
           : `<span class="status-pill status-concluido"><i class="fas fa-check"></i> Normal (${qtd})</span>`;
       }
 
-      // Ciclo de Vida da OS com Select Direto na Tabela
-      if (f === 'status' && currentSection === 'ordens') {
+      if (f === 'status' && dbKey === 'ordens') {
         const st = item.status || 'Orçamento';
         const cssMap = {
           'Orçamento': 'status-orcamento',
@@ -220,7 +255,7 @@ function renderTable() {
     }).join('');
 
     let acoes = `<div style="display:flex; gap:5px; justify-content:center;">`;
-    if (['ordens', 'vendas_pecas'].includes(currentSection)) {
+    if (['ordens', 'vendas_pecas'].includes(dbKey)) {
       acoes += `<button class="btn-action btn-wpp" onclick="enviarWhatsApp(${i})" title="Enviar Orçamento / Recibo via WhatsApp"><i class="fab fa-whatsapp"></i></button>`;
       acoes += `<button class="btn-action btn-light-ui" onclick="gerarPDF(${i})" title="Imprimir Recibo PDF"><i class="fas fa-file-pdf"></i></button>`;
     }
@@ -237,13 +272,13 @@ function renderTable() {
 // 5. ALTERAÇÃO RÁPIDA DE STATUS DA OS
 // ==========================================
 function alterarStatusOS(index, novoStatus) {
-  const os = db.ordens[index];
+  const os = (db.ordens || [])[index];
   if (!os) return;
 
   const statusAnterior = os.status || 'Orçamento';
   if (statusAnterior === novoStatus) return;
 
-  // Se estava como Orçamento e passou para Em Andamento ou Concluído -> Baixa no estoque
+  // Se estava em Orçamento e foi Aprovada (Em Andamento ou Concluído) -> Baixa estoque
   if (statusAnterior === 'Orçamento' && (novoStatus === 'Em Andamento' || novoStatus === 'Concluído')) {
     (os.itens || []).forEach(it => {
       if (it.brand) {
@@ -253,7 +288,7 @@ function alterarStatusOS(index, novoStatus) {
     });
   }
 
-  // Se estava em andamento/concluído e foi Cancelado -> Devolve ao estoque
+  // Se estava em andamento/concluído e foi Cancelada -> Estorna estoque
   if ((statusAnterior === 'Em Andamento' || statusAnterior === 'Concluído') && novoStatus === 'Cancelado') {
     (os.itens || []).forEach(it => {
       if (it.brand) {
@@ -275,35 +310,37 @@ function alterarStatusOS(index, novoStatus) {
 function openModal(index = null) {
   editIndex = index;
   const fields = document.getElementById('modal-fields');
+  const modal = document.getElementById('modal');
+  if (!fields || !modal) return;
   fields.innerHTML = '';
-  document.getElementById('modal').style.display = 'flex';
+  modal.style.display = 'flex';
 
-  const d = index !== null ? db[currentSection][index] : {};
-  document.getElementById('modal-title').innerText = index !== null ? `Editar Registro` : `Novo Cadastro`;
+  const dbKey = getSectionDbKey(currentSection);
+  const d = index !== null ? (db[dbKey] || [])[index] : {};
+  setSafeText('modal-title', index !== null ? `Editar Registro` : `Novo Cadastro`);
 
-  if (currentSection === 'clientes') {
+  if (dbKey === 'clientes') {
     fields.innerHTML = `
       <div class="form-group-ui"><label>Nome Completo do Cliente *</label><input id="f1" value="${d.nome || ''}"></div>
       <div style="display:flex; gap:10px;">
         <div class="form-group-ui" style="flex:1;"><label>CPF</label><input id="f2" placeholder="000.000.000-00" value="${d.cpf || ''}"></div>
         <div class="form-group-ui" style="flex:1;"><label>RG</label><input id="f3" value="${d.rg || ''}"></div>
       </div>
-      <div class="form-group-ui"><label>Telefone / WhatsApp *</label><input id="f4" placeholder="(00) 00000-0000" value="${d.tel || ''}"></div>
+      <div class="form-group-ui"><label>Telefone / WhatsApp *</label><input id="f4" placeholder="(21) 90000-0000" value="${d.tel || ''}"></div>
       <div class="form-group-ui"><label>Endereço Completo</label><textarea id="f5" rows="2">${d.endereco || ''}</textarea></div>
     `;
-  } else if (currentSection === 'funcionarios') {
+  } else if (dbKey === 'funcionarios') {
     fields.innerHTML = `
       <div class="form-group-ui"><label>Nome do Funcionário *</label><input id="f1" value="${d.nome || ''}"></div>
-      <div class="form-group-ui"><label>Função / Especialidade *</label><input id="f2" placeholder="Ex: Mecânico Instalador de Parabrisas" value="${d.funcao || ''}"></div>
+      <div class="form-group-ui"><label>Função / Especialidade *</label><input id="f2" placeholder="Ex: Mecânico Instalador" value="${d.funcao || ''}"></div>
       <div style="display:flex; gap:10px;">
         <div class="form-group-ui" style="flex:1;"><label>CPF</label><input id="f3" value="${d.cpf || ''}"></div>
         <div class="form-group-ui" style="flex:1;"><label>Telefone</label><input id="f4" value="${d.tel || ''}"></div>
       </div>
     `;
-  } else if (currentSection === 'estoque') {
-    // MODAL COM CALCULADORA DE PREÇO X CUSTO INTEGRADA
-    const custoIni = d.custo || '';
-    const precoIni = d.preco || '';
+  } else if (dbKey === 'estoque') {
+    const custoIni = d.custo !== undefined ? d.custo : '';
+    const precoIni = d.preco !== undefined ? d.preco : '';
     fields.innerHTML = `
       <div style="display:flex; gap:10px;">
         <div class="form-group-ui" style="flex:1;"><label>Marca / Fabricante *</label><input id="fMarca" placeholder="Ex: Pilkington, Sekurit, AGC" value="${d.marca || ''}"></div>
@@ -339,23 +376,30 @@ function openModal(index = null) {
     `;
     setTimeout(calcularPorPrecoVenda, 50);
 
-  } else if (currentSection === 'servicos') {
+  } else if (dbKey === 'servicos') {
     fields.innerHTML = `
-      <div class="form-group-ui"><label>Descrição do Serviço *</label><input id="f1" placeholder="Ex: Instalação Parabrisa com Cola PU" value="${d.nome || ''}"></div>
-      <div class="form-group-ui"><label>Preço Sugerido de Mão de Obra (R$) *</label><input id="f2" type="number" step="0.01" value="${d.preco || ''}"></div>
+      <div class="form-group-ui"><label>Descrição do Serviço *</label><input id="f1" placeholder="Ex: Instalação Parabrisa Dianteiro" value="${d.nome || ''}"></div>
+      <div class="form-group-ui"><label>Preço de Mão de Obra (R$) *</label><input id="f2" type="number" step="0.01" value="${d.preco || ''}"></div>
     `;
-  } else if (currentSection === 'usuarios') {
+  } else if (dbKey === 'usuarios') {
     fields.innerHTML = `
       <div class="form-group-ui"><label>Nome do Colaborador *</label><input id="f1" value="${d.nome || ''}"></div>
       <div class="form-group-ui"><label>Login de Acesso *</label><input id="f2" value="${d.user || ''}"></div>
       <div class="form-group-ui"><label>Senha *</label><input id="f3" type="password" value="${d.pass || ''}"></div>
     `;
-  } else if (currentSection === 'vendas_pecas') {
-    const cliOpts = db.clientes.map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
+  } else if (dbKey === 'vendas_pecas') {
+    const cliOptions = (db.clientes || []).map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
     fields.innerHTML = `
       <div style="display:flex; gap:10px;">
-        <div class="form-group-ui" style="flex:2;"><label>Cliente</label><select id="f1"><option value="Consumidor Final">Consumidor Final</option>${cliOpts}</select></div>
-        <div class="form-group-ui" style="flex:1;"><label>Forma de Pagamento</label>
+        <div class="form-group-ui" style="flex:2;">
+          <label>Cliente</label>
+          <select id="f1">
+            <option value="Consumidor Final / Balcão">Consumidor Final / Balcão</option>
+            ${cliOptions}
+          </select>
+        </div>
+        <div class="form-group-ui" style="flex:1;">
+          <label>Forma de Pagamento</label>
           <select id="fPag">
             <option value="PIX" ${d.pagamento==='PIX'?'selected':''}>PIX</option>
             <option value="Cartão de Crédito" ${d.pagamento==='Cartão de Crédito'?'selected':''}>Cartão de Crédito</option>
@@ -366,26 +410,40 @@ function openModal(index = null) {
         </div>
       </div>
       <div class="item-group-box">
-        <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-boxes-stacked text-primary"></i> Peças Vendidas</h4>
+        <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-boxes-stacked text-primary"></i> Peças da Venda</h4>
         <div id="venda-rows"></div>
         <button type="button" class="btn-ui btn-light-ui btn-action mt-2" onclick="addItemRow('venda-rows', true)"><i class="fas fa-plus"></i> Adicionar Peça</button>
       </div>
       <h3 style="margin-top:20px; font-size:16px; color:var(--primary);">Total da Venda: R$ <span id="displayTotal">0.00</span></h3>
       <input type="hidden" id="fTotal" value="0">
     `;
-    if (index === null || !d.itens) addItemRow('venda-rows', true);
+    if (index === null || !d.itens || d.itens.length === 0) addItemRow('venda-rows', true);
     else d.itens.forEach(it => addItemRow('venda-rows', true, it));
 
-  } else if (currentSection === 'ordens') {
-    const cliOpts = db.clientes.map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
-    const mecOpts = db.funcionarios.map(f => `<option value="${f.nome}" ${d.mecanico === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
+  } else if (dbKey === 'ordens') {
+    // Opções de Clientes com Consumidor Final como padrão garantido
+    const cliOptions = (db.clientes || []).map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
+    const mecOptions = (db.funcionarios || []).map(f => `<option value="${f.nome}" ${d.mecanico === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
+    
     fields.innerHTML = `
       <div style="display:flex; gap:10px;">
-        <div class="form-group-ui" style="flex:2;"><label>Cliente *</label><select id="f1"><option value="">Selecione o Cliente...</option>${cliOpts}</select></div>
-        <div class="form-group-ui" style="flex:1;"><label>Mecânico Responsável</label><select id="fMec"><option value="Não informado">Selecione...</option>${mecOpts}</select></div>
+        <div class="form-group-ui" style="flex:2;">
+          <label>Cliente *</label>
+          <select id="f1">
+            <option value="Consumidor Final">Consumidor Final / Balcão</option>
+            ${cliOptions}
+          </select>
+        </div>
+        <div class="form-group-ui" style="flex:1;">
+          <label>Mecânico Responsável</label>
+          <select id="fMec">
+            <option value="Geral / Oficina">Geral / Oficina</option>
+            ${mecOptions}
+          </select>
+        </div>
       </div>
       <div style="display:flex; gap:10px;">
-        <div class="form-group-ui" style="flex:1.5;"><label>Veículo / Modelo / Placa *</label><input id="f2" placeholder="Ex: Gol G5 2012 - ABC-1234" value="${d.veiculo || ''}"></div>
+        <div class="form-group-ui" style="flex:1.5;"><label>Veículo / Modelo / Placa *</label><input id="f2" placeholder="Ex: Onix 2021 - ABC-1234" value="${d.veiculo || ''}"></div>
         <div class="form-group-ui" style="flex:1;"><label>KM Atual</label><input id="fKm" placeholder="Ex: 85.000" value="${d.km || ''}"></div>
         <div class="form-group-ui" style="flex:1;"><label>Status do Pedido/OS *</label>
           <select id="fStatus">
@@ -396,7 +454,7 @@ function openModal(index = null) {
             <option value="Cancelado" ${d.status==='Cancelado'?'selected':''}>Cancelado</option>
           </select>
         </div>
-        <div class="form-group-ui" style="flex:1;"><label>Forma de Pagamento</label>
+        <div class="form-group-ui" style="flex:1;"><label>Forma Pagamento</label>
           <select id="fPag">
             <option value="PIX" ${d.pagamento==='PIX'?'selected':''}>PIX</option>
             <option value="Cartão de Crédito" ${d.pagamento==='Cartão de Crédito'?'selected':''}>Cartão de Crédito</option>
@@ -422,7 +480,7 @@ function openModal(index = null) {
       <h3 style="margin-top:20px; font-size:16px; color:var(--primary);">Total Geral da OS: R$ <span id="displayTotal">0.00</span></h3>
       <input type="hidden" id="fTotal" value="0">
     `;
-    if (index === null || !d.itens) {
+    if (index === null || !d.itens || d.itens.length === 0) {
       addItemRow('serv-rows', false);
       addItemRow('peca-rows', true);
     } else {
@@ -433,29 +491,40 @@ function openModal(index = null) {
   calcTotal();
 }
 
-// Funções da Calculadora de Preço x Custo
+// Calculadora de Preço x Custo
 function calcularPorMargem() {
-  const custo = parseFloat(document.getElementById('calcCusto').value) || 0;
-  const margem = parseFloat(document.getElementById('calcMargem').value) || 0;
+  const cEl = document.getElementById('calcCusto');
+  const mEl = document.getElementById('calcMargem');
+  const vEl = document.getElementById('fPrecoVenda');
+  const dEl = document.getElementById('displayLucroUnitario');
+  if (!cEl || !mEl || !vEl) return;
+
+  const custo = parseFloat(cEl.value) || 0;
+  const margem = parseFloat(mEl.value) || 0;
   const venda = custo * (1 + margem / 100);
   const lucro = venda - custo;
 
-  document.getElementById('fPrecoVenda').value = venda.toFixed(2);
-  document.getElementById('displayLucroUnitario').innerText = `R$ ${lucro.toFixed(2)} (+${margem.toFixed(1)}%)`;
+  vEl.value = venda.toFixed(2);
+  if (dEl) dEl.innerText = `R$ ${lucro.toFixed(2)} (+${margem.toFixed(1)}%)`;
 }
 
 function calcularPorPrecoVenda() {
-  const custo = parseFloat(document.getElementById('calcCusto').value) || 0;
-  const venda = parseFloat(document.getElementById('fPrecoVenda').value) || 0;
+  const cEl = document.getElementById('calcCusto');
+  const mEl = document.getElementById('calcMargem');
+  const vEl = document.getElementById('fPrecoVenda');
+  const dEl = document.getElementById('displayLucroUnitario');
+  if (!cEl || !vEl) return;
+
+  const custo = parseFloat(cEl.value) || 0;
+  const venda = parseFloat(vEl.value) || 0;
   const lucro = venda - custo;
   const margem = custo > 0 ? ((lucro / custo) * 100) : 0;
 
-  const display = document.getElementById('displayLucroUnitario');
-  if (display) {
-    display.innerText = `R$ ${lucro.toFixed(2)} (+${margem.toFixed(1)}%)`;
-  }
+  if (mEl && custo > 0) mEl.value = Math.round(margem);
+  if (dEl) dEl.innerText = `R$ ${lucro.toFixed(2)} (+${margem.toFixed(1)}%)`;
 }
 
+// Linhas de itens com suporte a catálogo e digitação direta
 function addItemRow(containerId, isPart, data = null) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -463,90 +532,127 @@ function addItemRow(containerId, isPart, data = null) {
   const div = document.createElement('div');
   div.className = 'item-row-ui';
 
+  const estoqueLista = db.estoque || [];
+  const servicosLista = db.servicos || [];
+
   let opts = isPart
-    ? db.estoque.map(e => `<option value="${e.preco}" data-name="${e.modelo}" data-brand="${e.marca}" ${data && data.nome === e.modelo ? 'selected' : ''}>${e.modelo} (${e.marca}) - Saldo: ${e.qtd} un - R$ ${parseFloat(e.preco).toFixed(2)}</option>`).join('')
-    : db.servicos.map(s => `<option value="${s.preco}" data-name="${s.nome}" ${data && data.nome === s.nome ? 'selected' : ''}>${s.nome} - R$ ${parseFloat(s.preco).toFixed(2)}</option>`).join('');
+    ? estoqueLista.map(e => `<option value="${e.preco}" data-name="${e.modelo}" data-brand="${e.marca}" ${data && data.nome === e.modelo ? 'selected' : ''}>${e.modelo} (${e.marca}) - R$ ${parseFloat(e.preco).toFixed(2)}</option>`).join('')
+    : servicosLista.map(s => `<option value="${s.preco}" data-name="${s.nome}" ${data && data.nome === s.nome ? 'selected' : ''}>${s.nome} - R$ ${parseFloat(s.preco).toFixed(2)}</option>`).join('');
 
   div.innerHTML = `
-    <select class="item-select" onchange="calcTotal()">
-      <option value="0">Selecione o ${isPart ? 'Produto/Peça' : 'Serviço'}...</option>
+    <select class="item-select" onchange="onSelectCatalogItem(this)">
+      <option value="0">Selecione do Catálogo ou digite...</option>
       ${opts}
     </select>
-    <input type="number" class="item-qty" value="${data ? data.qtd : 1}" min="1" onchange="calcTotal()">
-    <input type="text" class="item-price" readonly value="0.00">
+    <input type="number" class="item-qty" value="${data ? data.qtd : 1}" min="1" onchange="calcTotal()" placeholder="Qtd">
+    <input type="number" step="0.01" class="item-price" value="${data ? parseFloat(data.preco).toFixed(2) : '0.00'}" oninput="calcTotal()" placeholder="Preço (R$)">
     <button type="button" class="btn-ui btn-danger-ui btn-action" onclick="this.parentElement.remove(); calcTotal();"><i class="fas fa-times"></i></button>
   `;
   container.appendChild(div);
   calcTotal();
 }
 
+function onSelectCatalogItem(sel) {
+  const row = sel.closest('.item-row-ui');
+  if (!row) return;
+  const priceInput = row.querySelector('.item-price');
+  if (sel.selectedIndex > 0) {
+    const val = parseFloat(sel.value) || 0;
+    if (priceInput) priceInput.value = val.toFixed(2);
+  }
+  calcTotal();
+}
+
 function calcTotal() {
   let total = 0;
   document.querySelectorAll('.item-row-ui').forEach(row => {
-    const sel = row.querySelector('.item-select');
-    const qty = parseInt(row.querySelector('.item-qty').value) || 1;
-    const price = parseFloat(sel.value) || 0;
-    const sub = price * qty;
-    row.querySelector('.item-price').value = sub.toFixed(2);
-    total += sub;
+    const qtyInput = row.querySelector('.item-qty');
+    const priceInput = row.querySelector('.item-price');
+    const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+    const price = parseFloat(priceInput ? priceInput.value : 0) || 0;
+    total += (price * qty);
   });
 
-  const d = document.getElementById('displayTotal');
-  if (d) d.innerText = total.toFixed(2);
+  setSafeText('displayTotal', total.toFixed(2));
   const f = document.getElementById('fTotal');
   if (f) f.value = total.toFixed(2);
 }
 
 // ==========================================
-// 7. SALVAR DADOS E ATUALIZAR ESTOQUE
+// 7. SALVAR DADOS (BLINDADO)
 // ==========================================
 function handleSave() {
-  const v = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : '';
+  const v = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  };
 
   try {
+    const dbKey = getSectionDbKey(currentSection);
+    db[dbKey] = db[dbKey] || [];
     let obj = {};
 
-    if (['ordens', 'vendas_pecas'].includes(currentSection)) {
+    if (dbKey === 'ordens' || dbKey === 'vendas_pecas') {
       const items = [];
       let faltaEstoque = false;
       let msgEstoque = '';
 
       document.querySelectorAll('.item-row-ui').forEach(row => {
         const sel = row.querySelector('.item-select');
+        const qtyInput = row.querySelector('.item-qty');
+        const priceInput = row.querySelector('.item-price');
+
+        const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
+        const preco = parseFloat(priceInput ? priceInput.value : 0) || 0;
+
+        let nome = '';
+        let brand = '';
+
         if (sel && sel.selectedIndex > 0) {
           const opt = sel.options[sel.selectedIndex];
-          const brand = opt.getAttribute('data-brand') || '';
-          const name = opt.getAttribute('data-name');
-          const qty = parseInt(row.querySelector('.item-qty').value) || 0;
-          const preco = parseFloat(sel.value) || 0;
+          nome = opt.getAttribute('data-name') || opt.text;
+          brand = opt.getAttribute('data-brand') || '';
+        } else {
+          nome = dbKey === 'ordens' ? "Serviço / Item Geral" : "Peça Avulsa";
+        }
 
-          if (qty > 0) {
-            // Se for venda de peças ou OS confirmada, valida estoque
-            const statusOS = v('fStatus') || 'Concluído';
-            if (brand && editIndex === null && statusOS !== 'Orçamento') {
-              const itemEstoque = db.estoque.find(e => e.modelo === name && e.marca === brand);
-              if (itemEstoque && itemEstoque.qtd < qty) {
-                faltaEstoque = true;
-                msgEstoque = `Estoque insuficiente para "${name} (${brand})". Saldo atual: ${itemEstoque.qtd}, pedido: ${qty}.`;
-              }
+        if (qty > 0 && preco >= 0) {
+          const statusOS = v('fStatus') || 'Concluído';
+          if (brand && editIndex === null && statusOS !== 'Orçamento') {
+            const itemEstoque = (db.estoque || []).find(e => e.modelo === nome && e.marca === brand);
+            if (itemEstoque && itemEstoque.qtd < qty) {
+              faltaEstoque = true;
+              msgEstoque = `Estoque insuficiente para "${nome} (${brand})". Disponível: ${itemEstoque.qtd}, Solicitado: ${qty}.`;
             }
-            items.push({ nome, brand, qtd, preco });
           }
+          items.push({ nome, brand, qtd, preco });
         }
       });
 
-      if (faltaEstoque) return alert(msgEstoque);
-      if (!v('f1')) return alert("Selecione o Cliente.");
-      if (items.length === 0) return alert("Adicione pelo menos um item válido.");
-      if (currentSection === 'ordens' && !v('f2')) return alert("Informe o Veículo / Placa.");
+      if (faltaEstoque) {
+        alert(msgEstoque);
+        return;
+      }
+
+      const clienteNome = v('f1') || "Consumidor Final";
+
+      if (items.length === 0) {
+        alert("Por favor, adicione pelo menos um item ou serviço à lista com quantidade maior que zero.");
+        return;
+      }
+
+      if (dbKey === 'ordens' && !v('f2')) {
+        alert("Por favor, informe os dados do Veículo / Placa.");
+        return;
+      }
 
       const statusFinal = v('fStatus') || 'Concluído';
 
-      // Baixa de estoque se não for Orçamento
+      // Baixa de estoque apenas quando a OS não for orçamento
       if (editIndex === null && statusFinal !== 'Orçamento') {
         items.forEach(it => {
           if (it.brand) {
-            const target = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
+            const target = (db.estoque || []).find(e => e.modelo === it.nome && e.marca === it.brand);
             if (target) target.qtd = Math.max(0, target.qtd - it.qtd);
           }
         });
@@ -556,30 +662,30 @@ function handleSave() {
       const dataHoraFmt = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
 
       obj = {
-        id: editIndex !== null ? db[currentSection][editIndex].id : ((currentSection==='ordens'?'OS-':'VP-') + Math.floor(1000 + Math.random() * 9000)),
-        dataHora: editIndex !== null ? db[currentSection][editIndex].dataHora : dataHoraFmt,
-        cliente: v('f1'),
+        id: editIndex !== null ? db[dbKey][editIndex].id : ((dbKey === 'ordens' ? 'OS-' : 'VP-') + Math.floor(1000 + Math.random() * 9000)),
+        dataHora: editIndex !== null ? (db[dbKey][editIndex].dataHora || db[dbKey][editIndex].data) : dataHoraFmt,
+        cliente: clienteNome,
         pagamento: v('fPag') || 'PIX',
-        total: v('fTotal'),
+        total: parseFloat(v('fTotal')) || 0,
         itens: items
       };
 
-      if (currentSection === 'ordens') {
-        obj.mecanico = v('fMec') || 'Não informado';
+      if (dbKey === 'ordens') {
+        obj.mecanico = v('fMec') || 'Geral / Oficina';
         obj.veiculo = v('f2');
         obj.km = v('fKm') || '-';
         obj.status = statusFinal;
       }
 
-    } else if (currentSection === 'clientes') {
-      if (!v('f1')) return alert("O Nome é obrigatório.");
+    } else if (dbKey === 'clientes') {
+      if (!v('f1')) return alert("O Nome do cliente é obrigatório.");
       obj = { nome: v('f1'), cpf: v('f2'), rg: v('f3'), tel: v('f4'), endereco: v('f5') };
 
-    } else if (currentSection === 'funcionarios') {
-      if (!v('f1')) return alert("O Nome é obrigatório.");
+    } else if (dbKey === 'funcionarios') {
+      if (!v('f1')) return alert("O Nome do funcionário é obrigatório.");
       obj = { nome: v('f1'), funcao: v('f2'), cpf: v('f3'), tel: v('f4') };
 
-    } else if (currentSection === 'estoque') {
+    } else if (dbKey === 'estoque') {
       if (!v('fMarca') || !v('fModelo')) return alert("Marca e Modelo são obrigatórios.");
       const custo = parseFloat(v('calcCusto')) || 0;
       const preco = parseFloat(v('fPrecoVenda')) || 0;
@@ -592,17 +698,20 @@ function handleSave() {
         minimo: parseInt(v('fMinimo')) || 2
       };
 
-    } else if (currentSection === 'servicos') {
-      if (!v('f1')) return alert("A descrição é obrigatória.");
+    } else if (dbKey === 'servicos') {
+      if (!v('f1')) return alert("A descrição do serviço é obrigatória.");
       obj = { nome: v('f1'), preco: parseFloat(v('f2')) || 0 };
 
-    } else if (currentSection === 'usuarios') {
+    } else if (dbKey === 'usuarios') {
       if (!v('f1') || !v('f2') || !v('f3')) return alert("Preencha Nome, Login e Senha.");
       obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
     }
 
-    if (editIndex !== null) db[currentSection][editIndex] = obj;
-    else db[currentSection].push(obj);
+    if (editIndex !== null) {
+      db[dbKey][editIndex] = obj;
+    } else {
+      db[dbKey].push(obj);
+    }
 
     saveDatabase();
     closeModal();
@@ -610,29 +719,30 @@ function handleSave() {
     updateDashboard();
 
   } catch (err) {
-    console.error("Erro ao salvar:", err);
-    alert("Ocorreu um erro ao salvar o registro.");
+    console.error("Erro interno ao salvar:", err);
+    alert("Não foi possível salvar o registro. Verifique os dados inseridos e tente novamente.");
   }
 }
 
 function deleteItem(i) {
-  const item = db[currentSection][i];
+  const dbKey = getSectionDbKey(currentSection);
+  const item = (db[dbKey] || [])[i];
   if (!item) return;
 
   if (confirm("Deseja realmente excluir este registro?")) {
-    if (['ordens', 'vendas_pecas'].includes(currentSection) && item.itens && item.itens.length > 0) {
+    if (['ordens', 'vendas_pecas'].includes(dbKey) && item.itens && item.itens.length > 0) {
       if (item.status !== 'Orçamento' && item.status !== 'Cancelado') {
-        if (confirm("Deseja estornar a quantidade das peças excluídas de volta ao estoque?")) {
+        if (confirm("Deseja devolver a quantidade das peças excluídas de volta ao estoque?")) {
           item.itens.forEach(it => {
             if (it.brand) {
-              const t = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
+              const t = (db.estoque || []).find(e => e.modelo === it.nome && e.marca === it.brand);
               if (t) t.qtd += parseInt(it.qtd) || 0;
             }
           });
         }
       }
     }
-    db[currentSection].splice(i, 1);
+    db[dbKey].splice(i, 1);
     saveDatabase();
     renderTable();
     updateDashboard();
@@ -640,25 +750,27 @@ function deleteItem(i) {
 }
 
 function closeModal() {
-  document.getElementById('modal').style.display = 'none';
+  const modal = document.getElementById('modal');
+  if (modal) modal.style.display = 'none';
 }
 
 // ==========================================
-// 8. DASHBOARD COM MÉTRICAS INTELIGENTES
+// 8. DASHBOARD COM MÉTRICAS INTELIGENTES (SEGURO)
 // ==========================================
 function updateDashboard() {
-  // Faturamento Real (Apenas OS Concluídas + Vendas de Balcão)
-  const fatOS = db.ordens.filter(o => o.status === 'Concluído').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
-  const fatVP = db.vendas_pecas.reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
-  const totalOrcamentos = db.ordens.filter(o => o.status === 'Orçamento').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
+  const ordens = db.ordens || [];
+  const vendas = db.vendas_pecas || [];
+  const clientes = db.clientes || [];
 
-  document.getElementById('dash-faturamento').innerText = `R$ ${fatOS.toFixed(2)}`;
-  document.getElementById('dash-faturamento-pecas').innerText = `R$ ${fatVP.toFixed(2)}`;
-  document.getElementById('dash-os-count').innerText = db.ordens.filter(o => o.status === 'Concluído').length;
-  document.getElementById('dash-cli-count').innerText = db.clientes.length;
+  const fatOS = ordens.filter(o => o.status === 'Concluído').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
+  const fatVP = vendas.reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
+  const totalOrcamentos = ordens.filter(o => o.status === 'Orçamento').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
 
-  const orcElem = document.getElementById('dash-orcamentos-total');
-  if (orcElem) orcElem.innerText = `R$ ${totalOrcamentos.toFixed(2)}`;
+  setSafeText('dash-faturamento', `R$ ${fatOS.toFixed(2)}`);
+  setSafeText('dash-faturamento-pecas', `R$ ${fatVP.toFixed(2)}`);
+  setSafeText('dash-os-count', ordens.filter(o => o.status === 'Concluído').length);
+  setSafeText('dash-cli-count', clientes.length);
+  setSafeText('dash-orcamentos-total', `R$ ${totalOrcamentos.toFixed(2)}`);
 
   renderCharts();
 }
@@ -672,34 +784,38 @@ function renderCharts() {
     const labels = Object.keys(dataObj);
     const values = Object.values(dataObj);
 
-    chartInstances[id] = new Chart(ctx.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: labels.length > 0 ? labels : ['Sem dados'],
-        datasets: [{
-          label: label,
-          data: values.length > 0 ? values : [0],
-          backgroundColor: color,
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-      }
-    });
+    try {
+      chartInstances[id] = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: labels.length > 0 ? labels : ['Sem dados'],
+          datasets: [{
+            label: label,
+            data: values.length > 0 ? values : [0],
+            backgroundColor: color,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+    } catch (e) {
+      console.warn("Chart.js indisponível:", e);
+    }
   };
 
   const pMap = {}, sMap = {}, mMap = {};
-  db.ordens.concat(db.vendas_pecas).forEach(o => {
+  (db.ordens || []).concat(db.vendas_pecas || []).forEach(o => {
     if (o.status !== 'Cancelado' && o.itens) {
       o.itens.forEach(it => {
         if (it.brand) pMap[it.nome] = (pMap[it.nome] || 0) + (parseInt(it.qtd) || 0);
         else sMap[it.nome] = (sMap[it.nome] || 0) + (parseInt(it.qtd) || 1);
       });
     }
-    if (o.mecanico && o.mecanico !== 'Não informado') {
+    if (o.mecanico && o.mecanico !== 'Geral / Oficina') {
       mMap[o.mecanico] = (mMap[o.mecanico] || 0) + 1;
     }
   });
@@ -713,10 +829,11 @@ function renderCharts() {
 // 9. DISPARO DE ORÇAMENTO E RECIBO VIA WHATSAPP
 // ==========================================
 function enviarWhatsApp(i) {
-  const item = db[currentSection][i];
+  const dbKey = getSectionDbKey(currentSection);
+  const item = (db[dbKey] || [])[i];
   if (!item) return;
 
-  const cli = db.clientes.find(c => c.nome === item.cliente);
+  const cli = (db.clientes || []).find(c => c.nome === item.cliente);
   let tel = cli ? cli.tel.replace(/\D/g, '') : '';
 
   if (!tel) {
@@ -725,7 +842,7 @@ function enviarWhatsApp(i) {
     tel = inputTel.replace(/\D/g, '');
   }
 
-  const isOS = currentSection === 'ordens';
+  const isOS = dbKey === 'ordens';
   const tipoDoc = isOS && item.status === 'Orçamento' ? "ORÇAMENTO" : (isOS ? "ORDEM DE SERVIÇO" : "COMPROVANTE DE VENDA");
 
   let texto = `*THAYNARA AUTO VIDROS* 🚗🔧%0A`;
@@ -735,14 +852,14 @@ function enviarWhatsApp(i) {
   if (item.veiculo) texto += `🚘 *Veículo / Placa:* ${item.veiculo}%0A`;
   if (item.km && item.km !== '-') texto += `📍 *KM Atual:* ${item.km}%0A`;
   if (item.status) texto += `⚡ *Status:* ${item.status}%0A`;
-  if (item.mecanico && item.mecanico !== 'Não informado') texto += `👨‍🔧 *Mecânico Responsável:* ${item.mecanico}%0A`;
+  if (item.mecanico && item.mecanico !== 'Geral / Oficina') texto += `👨‍🔧 *Mecânico Responsável:* ${item.mecanico}%0A`;
 
   texto += `%0A🛠 *Itens e Serviços:*%0A`;
   (item.itens || []).forEach(it => {
     texto += `• ${it.qtd}x ${it.nome} - R$ ${(it.qtd * it.preco).toFixed(2)}%0A`;
   });
 
-  texto += `%0A💰 *VALOR TOTAL: R$ ${parseFloat(item.total).toFixed(2)}*%0A`;
+  texto += `%0A💰 *VALOR TOTAL: R$ ${parseFloat(item.total || 0).toFixed(2)}*%0A`;
   texto += `💳 *Forma de Pagamento:* ${item.pagamento || 'PIX'}%0A%0A`;
   texto += `Ficamos à disposição para qualquer dúvida ou confirmação! 👍`;
 
@@ -751,12 +868,13 @@ function enviarWhatsApp(i) {
 }
 
 // ==========================================
-// 10. IMPRESSÃO DE RECIBOS E RELATÓRIO PDF
+// 10. IMPRESSÃO DE RECIBOS E PDF
 // ==========================================
 function gerarPDF(i) {
   if (!window.jspdf || !window.jspdf.jsPDF) return alert("Biblioteca jsPDF carregando...");
   const { jsPDF } = window.jspdf;
-  const data = db[currentSection][i];
+  const dbKey = getSectionDbKey(currentSection);
+  const data = (db[dbKey] || [])[i];
   if (!data) return;
 
   const doc = new jsPDF();
@@ -765,7 +883,7 @@ function gerarPDF(i) {
   doc.setFontSize(9);
   doc.text(`Emissão: ${new Date().toLocaleString('pt-BR')}`, 190, 10, { align: 'right' });
   doc.setFontSize(13);
-  doc.text(currentSection === 'ordens' ? `ORDEM DE SERVIÇO (${data.status || 'Em Execução'})` : "COMPROVANTE DE VENDA", 105, 28, { align: 'center' });
+  doc.text(dbKey === 'ordens' ? `ORDEM DE SERVIÇO (${data.status || 'Em Execução'})` : "COMPROVANTE DE VENDA", 105, 28, { align: 'center' });
 
   doc.setLineWidth(0.5);
   doc.line(15, 34, 195, 34);
@@ -801,10 +919,11 @@ function exportarListaPDF() {
   if (!window.jspdf || !window.jspdf.jsPDF) return alert("jsPDF indisponível.");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const lista = db[currentSection] || [];
+  const dbKey = getSectionDbKey(currentSection);
+  const lista = db[dbKey] || [];
 
   doc.setFontSize(14);
-  doc.text(`Relatório de ${currentSection.toUpperCase()} - ${new Date().toLocaleDateString('pt-BR')}`, 14, 15);
+  doc.text(`Relatório de ${dbKey.toUpperCase()} - ${new Date().toLocaleDateString('pt-BR')}`, 14, 15);
 
   if (lista.length === 0) {
     doc.setFontSize(10);
@@ -813,16 +932,16 @@ function exportarListaPDF() {
     let headers = [];
     let rows = [];
 
-    if (currentSection === 'clientes') {
+    if (dbKey === 'clientes') {
       headers = ['Nome', 'CPF', 'Telefone', 'Endereço'];
       rows = lista.map(c => [c.nome, c.cpf, c.tel, c.endereco]);
-    } else if (currentSection === 'estoque') {
+    } else if (dbKey === 'estoque') {
       headers = ['Marca', 'Modelo', 'Custo (R$)', 'Venda (R$)', 'Saldo'];
       rows = lista.map(e => [e.marca, e.modelo, `R$ ${parseFloat(e.custo||0).toFixed(2)}`, `R$ ${parseFloat(e.preco).toFixed(2)}`, e.qtd]);
-    } else if (currentSection === 'ordens') {
+    } else if (dbKey === 'ordens') {
       headers = ['Nº OS', 'Data', 'Cliente', 'Veículo', 'Status', 'Pagamento', 'Total'];
       rows = lista.map(o => [o.id, o.dataHora || o.data, o.cliente, o.veiculo, o.status || 'Orçamento', o.pagamento || 'PIX', `R$ ${parseFloat(o.total).toFixed(2)}`]);
-    } else if (currentSection === 'vendas_pecas') {
+    } else if (dbKey === 'vendas_pecas') {
       headers = ['Nº Venda', 'Data', 'Cliente', 'Pagamento', 'Total'];
       rows = lista.map(v => [v.id, v.dataHora || v.data, v.cliente, v.pagamento || 'PIX', `R$ ${parseFloat(v.total).toFixed(2)}`]);
     } else {
@@ -839,7 +958,7 @@ function exportarListaPDF() {
     });
   }
 
-  doc.save(`Relatorio_${currentSection}.pdf`);
+  doc.save(`Relatorio_${dbKey}.pdf`);
 }
 
 function filtrarTabela() {
@@ -850,7 +969,7 @@ function filtrarTabela() {
 }
 
 // ==========================================
-// 11. MÓDULO DE BACKUP E RESTAURAÇÃO DE DADOS
+// 11. BACKUP E RESTAURAÇÃO DE DADOS
 // ==========================================
 function exportarBackupJSON() {
   const jsonStr = JSON.stringify(db, null, 2);
