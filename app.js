@@ -587,140 +587,150 @@ function handleSave() {
     return el ? el.value.trim() : '';
   };
 
-  try {
-    const dbKey = getSectionDbKey(currentSection);
-    db[dbKey] = db[dbKey] || [];
-    let obj = {};
+  const dbKey = getSectionDbKey(currentSection);
+  db[dbKey] = db[dbKey] || [];
+  let obj = {};
 
-    if (dbKey === 'ordens' || dbKey === 'vendas_pecas') {
-      const items = [];
-      let faltaEstoque = false;
-      let msgEstoque = '';
+  if (dbKey === 'ordens' || dbKey === 'vendas_pecas') {
+    const items = [];
+    let faltaEstoque = false;
+    let msgEstoque = '';
 
-      document.querySelectorAll('.item-row-ui').forEach(row => {
-        const sel = row.querySelector('.item-select');
-        const qtyInput = row.querySelector('.item-qty');
-        const priceInput = row.querySelector('.item-price');
+    const rows = document.querySelectorAll('.item-row-ui, .item-row');
+    rows.forEach(row => {
+      const sel = row.querySelector('.item-select');
+      const qtyInput = row.querySelector('.item-qty');
+      const priceInput = row.querySelector('.item-price');
 
-        const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
-        const preco = parseFloat(priceInput ? priceInput.value : 0) || 0;
+      const qtd = parseInt(qtyInput ? qtyInput.value : 0) || 0;
+      const preco = parseFloat(priceInput ? priceInput.value : 0) || 0;
 
-        let nome = '';
-        let brand = '';
+      let nome = '';
+      let brand = '';
 
-        if (sel && sel.selectedIndex > 0) {
-          const opt = sel.options[sel.selectedIndex];
-          nome = opt.getAttribute('data-name') || opt.text;
-          brand = opt.getAttribute('data-brand') || '';
-        } else {
-          nome = dbKey === 'ordens' ? "Serviço / Item Geral" : "Peça Avulsa";
-        }
+      if (sel && sel.selectedIndex > 0 && sel.options && sel.options[sel.selectedIndex]) {
+        const opt = sel.options[sel.selectedIndex];
+        nome = (opt.getAttribute && opt.getAttribute('data-name')) || opt.text || 'Item';
+        brand = (opt.getAttribute && opt.getAttribute('data-brand')) || '';
+      } else {
+        nome = (dbKey === 'ordens') ? "Serviço / Mão de Obra" : "Peça Avulsa";
+      }
 
-        if (qty > 0 && preco >= 0) {
-          const statusOS = v('fStatus') || 'Concluído';
-          if (brand && editIndex === null && statusOS !== 'Orçamento') {
-            const itemEstoque = (db.estoque || []).find(e => e.modelo === nome && e.marca === brand);
-            if (itemEstoque && itemEstoque.qtd < qty) {
-              faltaEstoque = true;
-              msgEstoque = `Estoque insuficiente para "${nome} (${brand})". Disponível: ${itemEstoque.qtd}, Solicitado: ${qty}.`;
-            }
+      if (qtd > 0 && preco >= 0) {
+        const statusOS = v('fStatus') || 'Concluído';
+        if (brand && editIndex === null && statusOS !== 'Orçamento') {
+          const itemEstoque = (db.estoque || []).find(e => e.modelo === nome && e.marca === brand);
+          if (itemEstoque && itemEstoque.qtd < qtd) {
+            faltaEstoque = true;
+            msgEstoque = `Estoque insuficiente para "${nome} (${brand})". Saldo atual: ${itemEstoque.qtd}, pedido: ${qtd}.`;
           }
-          items.push({ nome, brand, qtd, preco });
+        }
+        items.push({ nome: nome, brand: brand, qtd: qtd, preco: preco });
+      }
+    });
+
+    if (faltaEstoque) {
+      alert(msgEstoque);
+      return;
+    }
+
+    const clienteNome = v('f1') || "Consumidor Final";
+
+    if (items.length === 0) {
+      alert("Por favor, adicione pelo menos um item ou serviço à lista com valor e quantidade.");
+      return;
+    }
+
+    if (dbKey === 'ordens' && !v('f2')) {
+      alert("Por favor, informe os dados do Veículo / Placa (ex: Gol 2012 - ABC-1234).");
+      return;
+    }
+
+    const statusFinal = v('fStatus') || 'Concluído';
+
+    // Baixa de estoque apenas quando a OS não for orçamento
+    if (editIndex === null && statusFinal !== 'Orçamento') {
+      items.forEach(it => {
+        if (it.brand) {
+          const target = (db.estoque || []).find(e => e.modelo === it.nome && e.marca === it.brand);
+          if (target) target.qtd = Math.max(0, (parseInt(target.qtd) || 0) - it.qtd);
         }
       });
-
-      if (faltaEstoque) {
-        alert(msgEstoque);
-        return;
-      }
-
-      const clienteNome = v('f1') || "Consumidor Final";
-
-      if (items.length === 0) {
-        alert("Por favor, adicione pelo menos um item ou serviço à lista com quantidade maior que zero.");
-        return;
-      }
-
-      if (dbKey === 'ordens' && !v('f2')) {
-        alert("Por favor, informe os dados do Veículo / Placa.");
-        return;
-      }
-
-      const statusFinal = v('fStatus') || 'Concluído';
-
-      // Baixa de estoque apenas quando a OS não for orçamento
-      if (editIndex === null && statusFinal !== 'Orçamento') {
-        items.forEach(it => {
-          if (it.brand) {
-            const target = (db.estoque || []).find(e => e.modelo === it.nome && e.marca === it.brand);
-            if (target) target.qtd = Math.max(0, target.qtd - it.qtd);
-          }
-        });
-      }
-
-      const agora = new Date();
-      const dataHoraFmt = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
-
-      obj = {
-        id: editIndex !== null ? db[dbKey][editIndex].id : ((dbKey === 'ordens' ? 'OS-' : 'VP-') + Math.floor(1000 + Math.random() * 9000)),
-        dataHora: editIndex !== null ? (db[dbKey][editIndex].dataHora || db[dbKey][editIndex].data) : dataHoraFmt,
-        cliente: clienteNome,
-        pagamento: v('fPag') || 'PIX',
-        total: parseFloat(v('fTotal')) || 0,
-        itens: items
-      };
-
-      if (dbKey === 'ordens') {
-        obj.mecanico = v('fMec') || 'Geral / Oficina';
-        obj.veiculo = v('f2');
-        obj.km = v('fKm') || '-';
-        obj.status = statusFinal;
-      }
-
-    } else if (dbKey === 'clientes') {
-      if (!v('f1')) return alert("O Nome do cliente é obrigatório.");
-      obj = { nome: v('f1'), cpf: v('f2'), rg: v('f3'), tel: v('f4'), endereco: v('f5') };
-
-    } else if (dbKey === 'funcionarios') {
-      if (!v('f1')) return alert("O Nome do funcionário é obrigatório.");
-      obj = { nome: v('f1'), funcao: v('f2'), cpf: v('f3'), tel: v('f4') };
-
-    } else if (dbKey === 'estoque') {
-      if (!v('fMarca') || !v('fModelo')) return alert("Marca e Modelo são obrigatórios.");
-      const custo = parseFloat(v('calcCusto')) || 0;
-      const preco = parseFloat(v('fPrecoVenda')) || 0;
-      obj = {
-        marca: v('fMarca'),
-        modelo: v('fModelo'),
-        custo: custo,
-        preco: preco,
-        qtd: parseInt(v('fQtd')) || 0,
-        minimo: parseInt(v('fMinimo')) || 2
-      };
-
-    } else if (dbKey === 'servicos') {
-      if (!v('f1')) return alert("A descrição do serviço é obrigatória.");
-      obj = { nome: v('f1'), preco: parseFloat(v('f2')) || 0 };
-
-    } else if (dbKey === 'usuarios') {
-      if (!v('f1') || !v('f2') || !v('f3')) return alert("Preencha Nome, Login e Senha.");
-      obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
     }
 
-    if (editIndex !== null) {
-      db[dbKey][editIndex] = obj;
-    } else {
-      db[dbKey].push(obj);
+    const agora = new Date();
+    const dataHoraFmt = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
+
+    obj = {
+      id: editIndex !== null ? db[dbKey][editIndex].id : ((dbKey === 'ordens' ? 'OS-' : 'VP-') + Math.floor(1000 + Math.random() * 9000)),
+      dataHora: editIndex !== null ? (db[dbKey][editIndex].dataHora || db[dbKey][editIndex].data) : dataHoraFmt,
+      cliente: clienteNome,
+      pagamento: v('fPag') || 'PIX',
+      total: parseFloat(v('fTotal')) || 0,
+      itens: items
+    };
+
+    if (dbKey === 'ordens') {
+      obj.mecanico = v('fMec') || 'Geral / Oficina';
+      obj.veiculo = v('f2');
+      obj.km = v('fKm') || '-';
+      obj.status = statusFinal;
     }
 
-    saveDatabase();
-    closeModal();
+  } else if (dbKey === 'clientes') {
+    if (!v('f1')) return alert("O Nome do cliente é obrigatório.");
+    obj = { nome: v('f1'), cpf: v('f2'), rg: v('f3'), tel: v('f4'), endereco: v('f5') };
+
+  } else if (dbKey === 'funcionarios') {
+    if (!v('f1')) return alert("O Nome do funcionário é obrigatório.");
+    obj = { nome: v('f1'), funcao: v('f2'), cpf: v('f3'), tel: v('f4') };
+
+  } else if (dbKey === 'estoque') {
+    if (!v('fMarca') || !v('fModelo')) return alert("Marca e Modelo são obrigatórios.");
+    const custo = parseFloat(v('calcCusto')) || 0;
+    const preco = parseFloat(v('fPrecoVenda')) || 0;
+    obj = {
+      marca: v('fMarca'),
+      modelo: v('fModelo'),
+      custo: custo,
+      preco: preco,
+      qtd: parseInt(v('fQtd')) || 0,
+      minimo: parseInt(v('fMinimo')) || 2
+    };
+
+  } else if (dbKey === 'servicos') {
+    if (!v('f1')) return alert("A descrição do serviço é obrigatória.");
+    obj = { nome: v('f1'), preco: parseFloat(v('f2')) || 0 };
+
+  } else if (dbKey === 'usuarios') {
+    if (!v('f1') || !v('f2') || !v('f3')) return alert("Preencha Nome, Login e Senha.");
+    obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
+  }
+
+  // 1. Salva no array em memória
+  if (editIndex !== null) {
+    db[dbKey][editIndex] = obj;
+  } else {
+    db[dbKey].push(obj);
+  }
+
+  // 2. Persiste no localStorage
+  saveDatabase();
+
+  // 3. Fecha o modal
+  closeModal();
+
+  // 4. Atualiza a tela de forma segura (sem interromper o salvamento se der erro de tela)
+  try {
     renderTable();
-    updateDashboard();
+  } catch (errTable) {
+    console.warn("Aviso ao renderizar tabela:", errTable);
+  }
 
-  } catch (err) {
-    console.error("Erro interno ao salvar:", err);
-    alert("Não foi possível salvar o registro. Verifique os dados inseridos e tente novamente.");
+  try {
+    updateDashboard();
+  } catch (errDash) {
+    console.warn("Aviso ao atualizar dashboard:", errDash);
   }
 }
 
@@ -809,10 +819,13 @@ function renderCharts() {
 
   const pMap = {}, sMap = {}, mMap = {};
   (db.ordens || []).concat(db.vendas_pecas || []).forEach(o => {
-    if (o.status !== 'Cancelado' && o.itens) {
+    if (o && o.status !== 'Cancelado' && Array.isArray(o.itens)) {
       o.itens.forEach(it => {
-        if (it.brand) pMap[it.nome] = (pMap[it.nome] || 0) + (parseInt(it.qtd) || 0);
-        else sMap[it.nome] = (sMap[it.nome] || 0) + (parseInt(it.qtd) || 1);
+        if (it && typeof it === 'object') {
+          const nomeItem = it.nome || 'Item';
+          if (it.brand) pMap[nomeItem] = (pMap[nomeItem] || 0) + (parseInt(it.qtd) || 0);
+          else sMap[nomeItem] = (sMap[nomeItem] || 0) + (parseInt(it.qtd) || 1);
+        }
       });
     }
     if (o.mecanico && o.mecanico !== 'Geral / Oficina') {
