@@ -1,76 +1,185 @@
 /**
- * THAYNARA AUTO VIDROS - GESTÃO PROFISSIONAL PRO 25.0
- * Módulo Principal: app.js (Versão Blindada e Resiliente)
+ * THAYNARA AUTO VIDROS - SISTEMA DE GESTÃO AUTOMOTIVA PRO 25.0
+ * Arquitetura Modular, Resiliente e Profissional
  */
 
-// ==========================================
-// 1. BANCO DE DADOS E PERSISTÊNCIA
-// ==========================================
-const safeLoad = (key, defaultVal) => {
-  try {
-    const item = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(item) ? item : defaultVal;
-  } catch (e) {
-    return defaultVal;
+// ============================================================================
+// 1. STORAGE SERVICE (Camada de Persistência, Sanitização e Auto-Recuperação)
+// ============================================================================
+const StorageService = {
+  KEYS: {
+    CLIENTES: 'th_cli_v25',
+    FUNCIONARIOS: 'th_func_v25',
+    SERVICOS: 'th_serv_v25',
+    ESTOQUE: 'th_est_v25',
+    ORDENS: 'th_ord_v25',
+    VENDAS: 'th_vp_v25',
+    USUARIOS: 'th_user_v25'
+  },
+
+  safeLoad(key, defaultVal) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return defaultVal;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : defaultVal;
+    } catch (e) {
+      console.warn(`[StorageService] Falha ao ler chave ${key}, utilizando padrão.`, e);
+      return defaultVal;
+    }
+  },
+
+  save(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      return true;
+    } catch (e) {
+      console.error(`[StorageService] Falha ao persistir chave ${key}:`, e);
+      return false;
+    }
+  },
+
+  // Sanitiza dados legados para evitar quebras por registros antigos
+  sanitizeDatabase(database) {
+    const db = database;
+    db.clientes = Array.isArray(db.clientes) ? db.clientes : [];
+    db.funcionarios = Array.isArray(db.funcionarios) ? db.funcionarios : [];
+    db.servicos = Array.isArray(db.servicos) ? db.servicos : [];
+    db.estoque = Array.isArray(db.estoque) ? db.estoque : [];
+    db.ordens = Array.isArray(db.ordens) ? db.ordens : [];
+    db.vendas_pecas = Array.isArray(db.vendas_pecas) ? db.vendas_pecas : [];
+    db.usuarios = Array.isArray(db.usuarios) && db.usuarios.length > 0 ? db.usuarios : [
+      { nome: "Admin", user: "admin", pass: "123" }
+    ];
+
+    // Corrige ordens antigas que possam ter campos em formato não padronizado
+    db.ordens.forEach(o => {
+      if (!o) return;
+      if (!Array.isArray(o.itens)) o.itens = [];
+      if (!o.status) o.status = "Concluído";
+      if (!o.pagamento) o.pagamento = "PIX";
+      if (!o.total) o.total = 0;
+    });
+
+    db.vendas_pecas.forEach(v => {
+      if (!v) return;
+      if (!Array.isArray(v.itens)) v.itens = [];
+      if (!v.pagamento) v.pagamento = "PIX";
+      if (!v.total) v.total = 0;
+    });
+
+    return db;
   }
 };
 
-let db = {
-  clientes: safeLoad('th_cli_v25', []),
-  funcionarios: safeLoad('th_func_v25', []),
-  servicos: safeLoad('th_serv_v25', []),
-  estoque: safeLoad('th_est_v25', []),
-  ordens: safeLoad('th_ord_v25', []),
-  vendas_pecas: safeLoad('th_vp_v25', []),
-  usuarios: safeLoad('th_user_v25', [{ nome: "Admin", user: "admin", pass: "123" }])
-};
+// ============================================================================
+// 2. STATE & DATABASE REPOSITORY
+// ============================================================================
+let db = StorageService.sanitizeDatabase({
+  clientes: StorageService.safeLoad(StorageService.KEYS.CLIENTES, []),
+  funcionarios: StorageService.safeLoad(StorageService.KEYS.FUNCIONARIOS, []),
+  servicos: StorageService.safeLoad(StorageService.KEYS.SERVICOS, []),
+  estoque: StorageService.safeLoad(StorageService.KEYS.ESTOQUE, []),
+  ordens: StorageService.safeLoad(StorageService.KEYS.ORDENS, []),
+  vendas_pecas: StorageService.safeLoad(StorageService.KEYS.VENDAS, []),
+  usuarios: StorageService.safeLoad(StorageService.KEYS.USUARIOS, [
+    { nome: "Admin", user: "admin", pass: "123" }
+  ])
+});
 
 let currentSection = 'dashboard';
 let currentFilterStatus = 'TODOS';
 let editIndex = null;
 let chartInstances = {};
 
-function getSectionDbKey(sec) {
+function saveAll() {
+  StorageService.save(StorageService.KEYS.CLIENTES, db.clientes);
+  StorageService.save(StorageService.KEYS.FUNCIONARIOS, db.funcionarios);
+  StorageService.save(StorageService.KEYS.SERVICOS, db.servicos);
+  StorageService.save(StorageService.KEYS.ESTOQUE, db.estoque);
+  StorageService.save(StorageService.KEYS.ORDENS, db.ordens);
+  StorageService.save(StorageService.KEYS.VENDAS, db.vendas_pecas);
+  StorageService.save(StorageService.KEYS.USUARIOS, db.usuarios);
+}
+
+// Normalizador de chaves: garante compatibilidade plena entre singular e plural
+function normalizeSectionKey(sec) {
   if (sec === 'ordem' || sec === 'ordens') return 'ordens';
   if (sec === 'venda_pecas' || sec === 'vendas_pecas') return 'vendas_pecas';
   return sec;
 }
 
-function saveDatabase() {
-  try {
-    localStorage.setItem('th_cli_v25', JSON.stringify(db.clientes));
-    localStorage.setItem('th_func_v25', JSON.stringify(db.funcionarios));
-    localStorage.setItem('th_serv_v25', JSON.stringify(db.servicos));
-    localStorage.setItem('th_est_v25', JSON.stringify(db.estoque));
-    localStorage.setItem('th_ord_v25', JSON.stringify(db.ordens));
-    localStorage.setItem('th_vp_v25', JSON.stringify(db.vendas_pecas));
-    localStorage.setItem('th_user_v25', JSON.stringify(db.usuarios));
-  } catch (e) {
-    console.warn("Erro ao gravar no localStorage:", e);
-  }
-}
-
-// Auxiliar seguro para atualizar texto no DOM sem disparar erro se o elemento não existir
-function setSafeText(id, text) {
+// Utilitário para atualizar texto de forma segura sem estourar exceções
+function setElementText(id, text) {
   const el = document.getElementById(id);
   if (el) el.innerText = text;
 }
 
-// ==========================================
-// 2. AUTENTICAÇÃO E SESSÃO
-// ==========================================
+// ============================================================================
+// 3. INVENTORY SERVICE (Controle de Estoque, Baixa, Estorno e Margens)
+// ============================================================================
+const InventoryService = {
+  deductStock(items) {
+    if (!Array.isArray(items)) return;
+    items.forEach(it => {
+      if (it && it.brand) {
+        const itemEstoque = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
+        if (itemEstoque) {
+          const saldoAtual = parseInt(itemEstoque.qtd) || 0;
+          const qtdVendida = parseInt(it.qtd) || 0;
+          itemEstoque.qtd = Math.max(0, saldoAtual - qtdVendida);
+        }
+      }
+    });
+  },
+
+  restoreStock(items) {
+    if (!Array.isArray(items)) return;
+    items.forEach(it => {
+      if (it && it.brand) {
+        const itemEstoque = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
+        if (itemEstoque) {
+          const saldoAtual = parseInt(itemEstoque.qtd) || 0;
+          const qtdEstorno = parseInt(it.qtd) || 0;
+          itemEstoque.qtd = saldoAtual + qtdEstorno;
+        }
+      }
+    });
+  },
+
+  checkAvailability(items) {
+    if (!Array.isArray(items)) return { available: true };
+    for (const it of items) {
+      if (it && it.brand) {
+        const itemEstoque = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
+        const qtdPedida = parseInt(it.qtd) || 0;
+        if (itemEstoque && (parseInt(itemEstoque.qtd) || 0) < qtdPedida) {
+          return {
+            available: false,
+            message: `Estoque insuficiente para "${it.nome} (${it.brand})". Saldo atual: ${itemEstoque.qtd}, Solicitado: ${qtdPedida}.`
+          };
+        }
+      }
+    }
+    return { available: true };
+  }
+};
+
+// ============================================================================
+// 4. AUTENTICAÇÃO E CONTROLE DE ACESSO
+// ============================================================================
 function handleLogin() {
-  const inputU = document.getElementById('loginUser');
-  const inputP = document.getElementById('loginPass');
-  const u = inputU ? inputU.value.trim() : '';
-  const p = inputP ? inputP.value.trim() : '';
-  
-  const user = (db.usuarios || []).find(x => x.user === u && x.pass === p);
+  const uInput = document.getElementById('loginUser');
+  const pInput = document.getElementById('loginPass');
+  const u = uInput ? uInput.value.trim() : '';
+  const p = pInput ? pInput.value.trim() : '';
+
+  const user = db.usuarios.find(x => x.user === u && x.pass === p);
 
   if (user) {
     const overlay = document.getElementById('login-overlay');
     if (overlay) overlay.style.display = 'none';
-    setSafeText('welcomeName', user.nome);
+    setElementText('welcomeName', user.nome);
     updateDashboard();
   } else {
     const err = document.getElementById('login-err');
@@ -82,19 +191,19 @@ function handleLogin() {
 }
 
 function handleLogout() {
-  if (confirm("Deseja sair da sua sessão no sistema?")) {
-    const u = document.getElementById('loginUser');
-    const p = document.getElementById('loginPass');
-    if (u) u.value = '';
-    if (p) p.value = '';
+  if (confirm("Deseja realmente sair da sua sessão?")) {
+    const uInput = document.getElementById('loginUser');
+    const pInput = document.getElementById('loginPass');
+    if (uInput) uInput.value = '';
+    if (pInput) pInput.value = '';
     const overlay = document.getElementById('login-overlay');
     if (overlay) overlay.style.display = 'flex';
   }
 }
 
-// ==========================================
-// 3. NAVEGAÇÃO ENTRE MÓDULOS
-// ==========================================
+// ============================================================================
+// 5. NAVEGAÇÃO ENTRE MÓDULOS E FILTRAGEM
+// ============================================================================
 function showSection(sec, el) {
   currentSection = sec;
   currentFilterStatus = 'TODOS';
@@ -114,7 +223,7 @@ function showSection(sec, el) {
     usuarios: "Usuários e Segurança"
   };
 
-  setSafeText('page-title', titles[sec] || "Auto Vidros Pro");
+  setElementText('page-title', titles[sec] || "Auto Vidros Pro");
 
   const secDash = document.getElementById('sec-dashboard');
   const secTab = document.getElementById('sec-tabelas');
@@ -144,18 +253,18 @@ function setFilterStatus(status, btn) {
   renderTable();
 }
 
-// ==========================================
-// 4. RENDERIZAÇÃO DE TABELAS
-// ==========================================
+// ============================================================================
+// 6. RENDERIZAÇÃO DE TABELAS (Design Resiliente)
+// ============================================================================
 function renderTable() {
   const head = document.getElementById('table-head');
   const body = document.getElementById('table-body');
-  if (!head || !body) return;
+  if (!head || !body || typeof body.appendChild !== 'function') return;
   body.innerHTML = '';
 
-  const dbKey = getSectionDbKey(currentSection);
+  const dbKey = normalizeSectionKey(currentSection);
 
-  const tableConfigs = {
+  const configs = {
     clientes: {
       headers: ['Nome Completo', 'CPF', 'Telefone / WhatsApp', 'Endereço'],
       fields: ['nome', 'cpf', 'tel', 'endereco']
@@ -165,7 +274,7 @@ function renderTable() {
       fields: ['nome', 'funcao', 'cpf', 'tel']
     },
     servicos: {
-      headers: ['Descrição do Serviço', 'Preço Sugerido'],
+      headers: ['Descrição do Serviço', 'Preço Sugerido (R$)'],
       fields: ['nome', 'preco']
     },
     estoque: {
@@ -186,7 +295,7 @@ function renderTable() {
     }
   };
 
-  const cfg = tableConfigs[dbKey];
+  const cfg = configs[dbKey];
   if (!cfg) return;
 
   head.innerHTML = `<tr>${cfg.headers.map(h => `<th>${h}</th>`).join('')}<th style="text-align:center; width:160px;">Ações</th></tr>`;
@@ -203,10 +312,11 @@ function renderTable() {
   }
 
   lista.forEach((item, i) => {
+    if (!item) return;
     const tr = document.createElement('tr');
 
     let colsHtml = cfg.fields.map(f => {
-      let val = item[f] || '-';
+      let val = item[f] !== undefined && item[f] !== null ? item[f] : '-';
 
       if (f === 'preco' || f === 'custo' || f === 'total') {
         val = `R$ ${parseFloat(val || 0).toFixed(2)}`;
@@ -256,8 +366,8 @@ function renderTable() {
 
     let acoes = `<div style="display:flex; gap:5px; justify-content:center;">`;
     if (['ordens', 'vendas_pecas'].includes(dbKey)) {
-      acoes += `<button class="btn-action btn-wpp" onclick="enviarWhatsApp(${i})" title="Enviar Orçamento / Recibo via WhatsApp"><i class="fab fa-whatsapp"></i></button>`;
-      acoes += `<button class="btn-action btn-light-ui" onclick="gerarPDF(${i})" title="Imprimir Recibo PDF"><i class="fas fa-file-pdf"></i></button>`;
+      acoes += `<button class="btn-action btn-wpp" onclick="enviarWhatsApp(${i})" title="Enviar WhatsApp"><i class="fab fa-whatsapp"></i></button>`;
+      acoes += `<button class="btn-action btn-light-ui" onclick="gerarPDF(${i})" title="Imprimir PDF"><i class="fas fa-file-pdf"></i></button>`;
     }
     acoes += `<button class="btn-action btn-light-ui" onclick="openModal(${i})" title="Editar"><i class="fas fa-edit text-primary"></i></button>`;
     acoes += `<button class="btn-action btn-danger-ui" onclick="deleteItem(${i})" title="Excluir"><i class="fas fa-trash"></i></button>`;
@@ -268,11 +378,11 @@ function renderTable() {
   });
 }
 
-// ==========================================
-// 5. ALTERAÇÃO RÁPIDA DE STATUS DA OS
-// ==========================================
+// ============================================================================
+// 7. TRANSIÇÃO DE STATUS DA OS COM CONTROLE DE ESTOQUE
+// ============================================================================
 function alterarStatusOS(index, novoStatus) {
-  const os = (db.ordens || [])[index];
+  const os = db.ordens[index];
   if (!os) return;
 
   const statusAnterior = os.status || 'Orçamento';
@@ -280,33 +390,23 @@ function alterarStatusOS(index, novoStatus) {
 
   // Se estava em Orçamento e foi Aprovada (Em Andamento ou Concluído) -> Baixa estoque
   if (statusAnterior === 'Orçamento' && (novoStatus === 'Em Andamento' || novoStatus === 'Concluído')) {
-    (os.itens || []).forEach(it => {
-      if (it.brand) {
-        const target = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
-        if (target) target.qtd = Math.max(0, target.qtd - it.qtd);
-      }
-    });
+    InventoryService.deductStock(os.itens);
   }
 
-  // Se estava em andamento/concluído e foi Cancelada -> Estorna estoque
+  // Se estava em execução/concluído e foi Cancelada -> Estorna estoque
   if ((statusAnterior === 'Em Andamento' || statusAnterior === 'Concluído') && novoStatus === 'Cancelado') {
-    (os.itens || []).forEach(it => {
-      if (it.brand) {
-        const target = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
-        if (target) target.qtd += parseInt(it.qtd) || 0;
-      }
-    });
+    InventoryService.restoreStock(os.itens);
   }
 
   os.status = novoStatus;
-  saveDatabase();
-  renderTable();
-  updateDashboard();
+  saveAll();
+  try { renderTable(); } catch (e) { console.warn("[UI] Erro renderTable em alterarStatusOS:", e); }
+  try { updateDashboard(); } catch (e) { console.warn("[UI] Erro updateDashboard em alterarStatusOS:", e); }
 }
 
-// ==========================================
-// 6. FORMULÁRIOS, MODAL E CALCULADORA DE PREÇO X CUSTO
-// ==========================================
+// ============================================================================
+// 8. MODAL DINÂMICO E CALCULADORA DE PREÇO X CUSTO
+// ============================================================================
 function openModal(index = null) {
   editIndex = index;
   const fields = document.getElementById('modal-fields');
@@ -315,9 +415,9 @@ function openModal(index = null) {
   fields.innerHTML = '';
   modal.style.display = 'flex';
 
-  const dbKey = getSectionDbKey(currentSection);
+  const dbKey = normalizeSectionKey(currentSection);
   const d = index !== null ? (db[dbKey] || [])[index] : {};
-  setSafeText('modal-title', index !== null ? `Editar Registro` : `Novo Cadastro`);
+  setElementText('modal-title', index !== null ? `Editar Registro` : `Novo Cadastro`);
 
   if (dbKey === 'clientes') {
     fields.innerHTML = `
@@ -344,7 +444,7 @@ function openModal(index = null) {
     fields.innerHTML = `
       <div style="display:flex; gap:10px;">
         <div class="form-group-ui" style="flex:1;"><label>Marca / Fabricante *</label><input id="fMarca" placeholder="Ex: Pilkington, Sekurit, AGC" value="${d.marca || ''}"></div>
-        <div class="form-group-ui" style="flex:2;"><label>Modelo / Vidro / Descrição *</label><input id="fModelo" placeholder="Ex: Parabrisa Dianteiro Onix 2020/2023" value="${d.modelo || ''}"></div>
+        <div class="form-group-ui" style="flex:2;"><label>Modelo / Descrição *</label><input id="fModelo" placeholder="Ex: Parabrisa Dianteiro Onix 2020/2023" value="${d.modelo || ''}"></div>
       </div>
       
       <div class="calc-card">
@@ -378,8 +478,8 @@ function openModal(index = null) {
 
   } else if (dbKey === 'servicos') {
     fields.innerHTML = `
-      <div class="form-group-ui"><label>Descrição do Serviço *</label><input id="f1" placeholder="Ex: Instalação Parabrisa Dianteiro" value="${d.nome || ''}"></div>
-      <div class="form-group-ui"><label>Preço de Mão de Obra (R$) *</label><input id="f2" type="number" step="0.01" value="${d.preco || ''}"></div>
+      <div class="form-group-ui"><label>Descrição do Serviço *</label><input id="f1" placeholder="Ex: Instalação Parabrisa com Cola PU" value="${d.nome || ''}"></div>
+      <div class="form-group-ui"><label>Preço Sugerido (R$) *</label><input id="f2" type="number" step="0.01" value="${d.preco || ''}"></div>
     `;
   } else if (dbKey === 'usuarios') {
     fields.innerHTML = `
@@ -388,15 +488,14 @@ function openModal(index = null) {
       <div class="form-group-ui"><label>Senha *</label><input id="f3" type="password" value="${d.pass || ''}"></div>
     `;
   } else if (dbKey === 'vendas_pecas') {
-    const cliOptions = (db.clientes || []).map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
+    // Datalist de Clientes para permitir selecionar ou digitar novo
+    const datalistOptions = db.clientes.map(c => `<option value="${c.nome}">`).join('');
     fields.innerHTML = `
+      <datalist id="clientes-list">${datalistOptions}</datalist>
       <div style="display:flex; gap:10px;">
         <div class="form-group-ui" style="flex:2;">
-          <label>Cliente</label>
-          <select id="f1">
-            <option value="Consumidor Final / Balcão">Consumidor Final / Balcão</option>
-            ${cliOptions}
-          </select>
+          <label>Cliente (Selecione ou digite um novo)</label>
+          <input id="f1" list="clientes-list" placeholder="Consumidor Final" value="${d.cliente || 'Consumidor Final'}">
         </div>
         <div class="form-group-ui" style="flex:1;">
           <label>Forma de Pagamento</label>
@@ -417,22 +516,20 @@ function openModal(index = null) {
       <h3 style="margin-top:20px; font-size:16px; color:var(--primary);">Total da Venda: R$ <span id="displayTotal">0.00</span></h3>
       <input type="hidden" id="fTotal" value="0">
     `;
-    if (index === null || !d.itens || d.itens.length === 0) addItemRow('venda-rows', true);
+    if (index === null || !Array.isArray(d.itens) || d.itens.length === 0) addItemRow('venda-rows', true);
     else d.itens.forEach(it => addItemRow('venda-rows', true, it));
 
   } else if (dbKey === 'ordens') {
-    // Opções de Clientes com Consumidor Final como padrão garantido
-    const cliOptions = (db.clientes || []).map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
-    const mecOptions = (db.funcionarios || []).map(f => `<option value="${f.nome}" ${d.mecanico === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
-    
+    // Datalists para Cliente e Mecânico
+    const cliDatalist = db.clientes.map(c => `<option value="${c.nome}">`).join('');
+    const mecOptions = db.funcionarios.map(f => `<option value="${f.nome}" ${d.mecanico === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
+
     fields.innerHTML = `
+      <datalist id="clientes-list">${cliDatalist}</datalist>
       <div style="display:flex; gap:10px;">
         <div class="form-group-ui" style="flex:2;">
-          <label>Cliente *</label>
-          <select id="f1">
-            <option value="Consumidor Final">Consumidor Final / Balcão</option>
-            ${cliOptions}
-          </select>
+          <label>Cliente (Selecione ou digite um novo) *</label>
+          <input id="f1" list="clientes-list" placeholder="Consumidor Final" value="${d.cliente || 'Consumidor Final'}">
         </div>
         <div class="form-group-ui" style="flex:1;">
           <label>Mecânico Responsável</label>
@@ -442,6 +539,7 @@ function openModal(index = null) {
           </select>
         </div>
       </div>
+
       <div style="display:flex; gap:10px;">
         <div class="form-group-ui" style="flex:1.5;"><label>Veículo / Modelo / Placa *</label><input id="f2" placeholder="Ex: Onix 2021 - ABC-1234" value="${d.veiculo || ''}"></div>
         <div class="form-group-ui" style="flex:1;"><label>KM Atual</label><input id="fKm" placeholder="Ex: 85.000" value="${d.km || ''}"></div>
@@ -466,32 +564,28 @@ function openModal(index = null) {
       </div>
       
       <div class="item-group-box">
-        <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-tools text-primary"></i> Serviços de Mão de Obra</h4>
-        <div id="serv-rows"></div>
-        <button type="button" class="btn-ui btn-light-ui btn-action mt-2" onclick="addItemRow('serv-rows', false)"><i class="fas fa-plus"></i> Adicionar Serviço</button>
+        <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-tools text-primary"></i> Itens, Serviços e Peças</h4>
+        <div id="os-rows"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button type="button" class="btn-ui btn-light-ui btn-action" onclick="addItemRow('os-rows', false)"><i class="fas fa-wrench"></i> + Serviço</button>
+          <button type="button" class="btn-ui btn-light-ui btn-action" onclick="addItemRow('os-rows', true)"><i class="fas fa-box"></i> + Peça</button>
+        </div>
       </div>
 
-      <div class="item-group-box mt-3">
-        <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-boxes-stacked text-warning"></i> Peças, Vidros e Acessórios</h4>
-        <div id="peca-rows"></div>
-        <button type="button" class="btn-ui btn-light-ui btn-action mt-2" onclick="addItemRow('peca-rows', true)"><i class="fas fa-plus"></i> Adicionar Peça</button>
-      </div>
-
-      <h3 style="margin-top:20px; font-size:16px; color:var(--primary);">Total Geral da OS: R$ <span id="displayTotal">0.00</span></h3>
+      <h3 style="margin-top:20px; font-size:16px; color:var(--primary);">Total Geral: R$ <span id="displayTotal">0.00</span></h3>
       <input type="hidden" id="fTotal" value="0">
     `;
-    if (index === null || !d.itens || d.itens.length === 0) {
-      addItemRow('serv-rows', false);
-      addItemRow('peca-rows', true);
+
+    if (index === null || !Array.isArray(d.itens) || d.itens.length === 0) {
+      addItemRow('os-rows', false); // Adiciona 1 serviço por padrão
     } else {
-      d.itens.filter(i => !i.brand).forEach(it => addItemRow('serv-rows', false, it));
-      d.itens.filter(i => i.brand).forEach(it => addItemRow('peca-rows', true, it));
+      d.itens.forEach(it => addItemRow('os-rows', !!it.brand, it));
     }
   }
   calcTotal();
 }
 
-// Calculadora de Preço x Custo
+// Funções da Calculadora de Preço x Custo
 function calcularPorMargem() {
   const cEl = document.getElementById('calcCusto');
   const mEl = document.getElementById('calcMargem');
@@ -524,7 +618,7 @@ function calcularPorPrecoVenda() {
   if (dEl) dEl.innerText = `R$ ${lucro.toFixed(2)} (+${margem.toFixed(1)}%)`;
 }
 
-// Linhas de itens com suporte a catálogo e digitação direta
+// Inclusão de Linhas de Item com suporte a catálogo E digitação livre
 function addItemRow(containerId, isPart, data = null) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -532,73 +626,95 @@ function addItemRow(containerId, isPart, data = null) {
   const div = document.createElement('div');
   div.className = 'item-row-ui';
 
-  const estoqueLista = db.estoque || [];
-  const servicosLista = db.servicos || [];
+  const catalogo = isPart ? db.estoque : db.servicos;
+  let datalistId = 'dl_' + Math.random().toString(36).substring(7);
 
-  let opts = isPart
-    ? estoqueLista.map(e => `<option value="${e.preco}" data-name="${e.modelo}" data-brand="${e.marca}" ${data && data.nome === e.modelo ? 'selected' : ''}>${e.modelo} (${e.marca}) - R$ ${parseFloat(e.preco).toFixed(2)}</option>`).join('')
-    : servicosLista.map(s => `<option value="${s.preco}" data-name="${s.nome}" ${data && data.nome === s.nome ? 'selected' : ''}>${s.nome} - R$ ${parseFloat(s.preco).toFixed(2)}</option>`).join('');
+  let datalistOptions = '';
+  if (isPart) {
+    datalistOptions = catalogo.map(e => `<option value="${e.modelo}">${e.modelo} (${e.marca}) - R$ ${parseFloat(e.preco).toFixed(2)}</option>`).join('');
+  } else {
+    datalistOptions = catalogo.map(s => `<option value="${s.nome}">${s.nome} - R$ ${parseFloat(s.preco).toFixed(2)}</option>`).join('');
+  }
+
+  const nomeInicial = data ? data.nome : (isPart ? 'Parabrisa / Peça' : 'Mão de Obra / Serviço');
+  const precoInicial = data ? parseFloat(data.preco).toFixed(2) : (isPart ? '150.00' : '80.00');
+  const qtdInicial = data ? data.qtd : 1;
+  const brandVal = data ? (data.brand || '') : (isPart ? 'Geral' : '');
 
   div.innerHTML = `
-    <select class="item-select" onchange="onSelectCatalogItem(this)">
-      <option value="0">Selecione do Catálogo ou digite...</option>
-      ${opts}
-    </select>
-    <input type="number" class="item-qty" value="${data ? data.qtd : 1}" min="1" onchange="calcTotal()" placeholder="Qtd">
-    <input type="number" step="0.01" class="item-price" value="${data ? parseFloat(data.preco).toFixed(2) : '0.00'}" oninput="calcTotal()" placeholder="Preço (R$)">
-    <button type="button" class="btn-ui btn-danger-ui btn-action" onclick="this.parentElement.remove(); calcTotal();"><i class="fas fa-times"></i></button>
+    <datalist id="${datalistId}">${datalistOptions}</datalist>
+    <div style="position:relative;">
+      <input type="text" class="item-name" list="${datalistId}" placeholder="${isPart ? 'Nome da Peça / Vidro' : 'Descrição do Serviço'}" value="${nomeInicial}" onchange="onItemNameChange(this, ${isPart})">
+      <input type="hidden" class="item-brand" value="${brandVal}">
+    </div>
+    <input type="number" class="item-qty" value="${qtdInicial}" min="1" oninput="calcTotal()" placeholder="Qtd">
+    <input type="number" step="0.01" class="item-price" value="${precoInicial}" oninput="calcTotal()" placeholder="Preço (R$)">
+    <button type="button" class="btn-ui btn-danger-ui btn-action" onclick="this.closest('.item-row-ui').remove(); calcTotal();"><i class="fas fa-times"></i></button>
   `;
   container.appendChild(div);
   calcTotal();
 }
 
-function onSelectCatalogItem(sel) {
-  const row = sel.closest('.item-row-ui');
+function onItemNameChange(input, isPart) {
+  const row = input.closest('.item-row-ui');
   if (!row) return;
+  const val = input.value.trim();
   const priceInput = row.querySelector('.item-price');
-  if (sel.selectedIndex > 0) {
-    const val = parseFloat(sel.value) || 0;
-    if (priceInput) priceInput.value = val.toFixed(2);
+  const brandInput = row.querySelector('.item-brand');
+
+  if (isPart) {
+    const itemEstoque = db.estoque.find(e => e.modelo.toLowerCase() === val.toLowerCase());
+    if (itemEstoque) {
+      if (priceInput) priceInput.value = parseFloat(itemEstoque.preco).toFixed(2);
+      if (brandInput) brandInput.value = itemEstoque.marca || '';
+    }
+  } else {
+    const itemServ = db.servicos.find(s => s.nome.toLowerCase() === val.toLowerCase());
+    if (itemServ && priceInput) {
+      priceInput.value = parseFloat(itemServ.preco).toFixed(2);
+    }
   }
   calcTotal();
 }
 
 function calcTotal() {
   let total = 0;
-  document.querySelectorAll('.item-row-ui').forEach(row => {
+  document.querySelectorAll('.item-row-ui, .item-row').forEach(row => {
     const qtyInput = row.querySelector('.item-qty');
     const priceInput = row.querySelector('.item-price');
-    const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+    const qtd = parseInt(qtyInput ? qtyInput.value : 1) || 1;
     const price = parseFloat(priceInput ? priceInput.value : 0) || 0;
-    total += (price * qty);
+    total += (price * qtd);
   });
 
-  setSafeText('displayTotal', total.toFixed(2));
+  setElementText('displayTotal', total.toFixed(2));
   const f = document.getElementById('fTotal');
   if (f) f.value = total.toFixed(2);
 }
 
-// ==========================================
-// 7. SALVAR DADOS (BLINDADO)
-// ==========================================
+// ============================================================================
+// 9. TRANSAÇÃO DE SALVAMENTO BLINDADA (Senior Backend-Level)
+// ============================================================================
 function handleSave() {
-  const v = (id) => {
+  const getVal = (id) => {
     const el = document.getElementById(id);
     return el ? el.value.trim() : '';
   };
 
-  const dbKey = getSectionDbKey(currentSection);
-  db[dbKey] = db[dbKey] || [];
+  const dbKey = normalizeSectionKey(currentSection);
+  db[dbKey] = Array.isArray(db[dbKey]) ? db[dbKey] : [];
+
   let obj = {};
 
+  // --- TRATAMENTO PARA ORDENS DE SERVIÇO E VENDAS ---
   if (dbKey === 'ordens' || dbKey === 'vendas_pecas') {
     const items = [];
-    let faltaEstoque = false;
-    let msgEstoque = '';
-
     const rows = document.querySelectorAll('.item-row-ui, .item-row');
+
     rows.forEach(row => {
-      const sel = row.querySelector('.item-select');
+      const nameInput = row.querySelector('.item-name');
+      const selectElem = row.querySelector('.item-select');
+      const brandInput = row.querySelector('.item-brand');
       const qtyInput = row.querySelector('.item-qty');
       const priceInput = row.querySelector('.item-price');
 
@@ -606,136 +722,113 @@ function handleSave() {
       const preco = parseFloat(priceInput ? priceInput.value : 0) || 0;
 
       let nome = '';
-      let brand = '';
+      let brand = brandInput ? brandInput.value : '';
 
-      if (sel && sel.selectedIndex > 0 && sel.options && sel.options[sel.selectedIndex]) {
-        const opt = sel.options[sel.selectedIndex];
-        nome = (opt.getAttribute && opt.getAttribute('data-name')) || opt.text || 'Item';
-        brand = (opt.getAttribute && opt.getAttribute('data-brand')) || '';
+      if (nameInput && nameInput.value.trim()) {
+        nome = nameInput.value.trim();
+      } else if (selectElem && selectElem.selectedIndex > 0 && selectElem.options[selectElem.selectedIndex]) {
+        const opt = selectElem.options[selectElem.selectedIndex];
+        nome = opt.getAttribute('data-name') || opt.text || 'Item';
+        brand = opt.getAttribute('data-brand') || brand;
       } else {
-        nome = (dbKey === 'ordens') ? "Serviço / Mão de Obra" : "Peça Avulsa";
+        nome = dbKey === 'ordens' ? "Serviço Prestado" : "Peça Avulsa";
       }
 
+      // Se possui quantidade e valor positivo, adiciona
       if (qtd > 0 && preco >= 0) {
-        const statusOS = v('fStatus') || 'Concluído';
-        if (brand && editIndex === null && statusOS !== 'Orçamento') {
-          const itemEstoque = (db.estoque || []).find(e => e.modelo === nome && e.marca === brand);
-          if (itemEstoque && itemEstoque.qtd < qtd) {
-            faltaEstoque = true;
-            msgEstoque = `Estoque insuficiente para "${nome} (${brand})". Saldo atual: ${itemEstoque.qtd}, pedido: ${qtd}.`;
-          }
-        }
-        items.push({ nome: nome, brand: brand, qtd: qtd, preco: preco });
+        items.push({ nome, brand, qtd, preco });
       }
     });
 
-    if (faltaEstoque) {
-      alert(msgEstoque);
-      return;
-    }
-
-    const clienteNome = v('f1') || "Consumidor Final";
-
     if (items.length === 0) {
-      alert("Por favor, adicione pelo menos um item ou serviço à lista com valor e quantidade.");
+      alert("Por favor, informe pelo menos um serviço ou peça com quantidade e preço.");
       return;
     }
 
-    if (dbKey === 'ordens' && !v('f2')) {
-      alert("Por favor, informe os dados do Veículo / Placa (ex: Gol 2012 - ABC-1234).");
-      return;
-    }
-
-    const statusFinal = v('fStatus') || 'Concluído';
-
-    // Baixa de estoque apenas quando a OS não for orçamento
+    // Validação de estoque para peças
+    const statusFinal = getVal('fStatus') || 'Concluído';
     if (editIndex === null && statusFinal !== 'Orçamento') {
-      items.forEach(it => {
-        if (it.brand) {
-          const target = (db.estoque || []).find(e => e.modelo === it.nome && e.marca === it.brand);
-          if (target) target.qtd = Math.max(0, (parseInt(target.qtd) || 0) - it.qtd);
-        }
-      });
+      const stockCheck = InventoryService.checkAvailability(items);
+      if (!stockCheck.available) {
+        alert(stockCheck.message);
+        return;
+      }
+      InventoryService.deductStock(items);
     }
+
+    const clienteNome = getVal('f1') || "Consumidor Final";
+    const veiculoVal = getVal('f2') || (dbKey === 'ordens' ? "Veículo Geral" : "");
 
     const agora = new Date();
-    const dataHoraFmt = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
+    const dataHoraFmt = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
     obj = {
       id: editIndex !== null ? db[dbKey][editIndex].id : ((dbKey === 'ordens' ? 'OS-' : 'VP-') + Math.floor(1000 + Math.random() * 9000)),
       dataHora: editIndex !== null ? (db[dbKey][editIndex].dataHora || db[dbKey][editIndex].data) : dataHoraFmt,
       cliente: clienteNome,
-      pagamento: v('fPag') || 'PIX',
-      total: parseFloat(v('fTotal')) || 0,
+      pagamento: getVal('fPag') || 'PIX',
+      total: parseFloat(getVal('fTotal')) || 0,
       itens: items
     };
 
     if (dbKey === 'ordens') {
-      obj.mecanico = v('fMec') || 'Geral / Oficina';
-      obj.veiculo = v('f2');
-      obj.km = v('fKm') || '-';
+      obj.mecanico = getVal('fMec') || 'Geral / Oficina';
+      obj.veiculo = veiculoVal;
+      obj.km = getVal('fKm') || '-';
       obj.status = statusFinal;
     }
 
+    // Auto-cadastro de cliente se ainda não existir
+    if (clienteNome && clienteNome !== "Consumidor Final" && !db.clientes.some(c => c.nome.toLowerCase() === clienteNome.toLowerCase())) {
+      db.clientes.push({ nome: clienteNome, tel: "", cpf: "", endereco: "" });
+    }
+
+  // --- TRATAMENTO PARA DEMAIS CADASTROS ---
   } else if (dbKey === 'clientes') {
-    if (!v('f1')) return alert("O Nome do cliente é obrigatório.");
-    obj = { nome: v('f1'), cpf: v('f2'), rg: v('f3'), tel: v('f4'), endereco: v('f5') };
+    if (!getVal('f1')) return alert("O Nome do cliente é obrigatório.");
+    obj = { nome: getVal('f1'), cpf: getVal('f2'), rg: getVal('f3'), tel: getVal('f4'), endereco: getVal('f5') };
 
   } else if (dbKey === 'funcionarios') {
-    if (!v('f1')) return alert("O Nome do funcionário é obrigatório.");
-    obj = { nome: v('f1'), funcao: v('f2'), cpf: v('f3'), tel: v('f4') };
+    if (!getVal('f1')) return alert("O Nome do funcionário é obrigatório.");
+    obj = { nome: getVal('f1'), funcao: getVal('f2'), cpf: getVal('f3'), tel: getVal('f4') };
 
   } else if (dbKey === 'estoque') {
-    if (!v('fMarca') || !v('fModelo')) return alert("Marca e Modelo são obrigatórios.");
-    const custo = parseFloat(v('calcCusto')) || 0;
-    const preco = parseFloat(v('fPrecoVenda')) || 0;
+    if (!getVal('fMarca') || !getVal('fModelo')) return alert("Marca e Modelo são obrigatórios.");
     obj = {
-      marca: v('fMarca'),
-      modelo: v('fModelo'),
-      custo: custo,
-      preco: preco,
-      qtd: parseInt(v('fQtd')) || 0,
-      minimo: parseInt(v('fMinimo')) || 2
+      marca: getVal('fMarca'),
+      modelo: getVal('fModelo'),
+      custo: parseFloat(getVal('calcCusto')) || 0,
+      preco: parseFloat(getVal('fPrecoVenda')) || 0,
+      qtd: parseInt(getVal('fQtd')) || 0,
+      minimo: parseInt(getVal('fMinimo')) || 2
     };
 
   } else if (dbKey === 'servicos') {
-    if (!v('f1')) return alert("A descrição do serviço é obrigatória.");
-    obj = { nome: v('f1'), preco: parseFloat(v('f2')) || 0 };
+    if (!getVal('f1')) return alert("A descrição do serviço é obrigatória.");
+    obj = { nome: getVal('f1'), preco: parseFloat(getVal('f2')) || 0 };
 
   } else if (dbKey === 'usuarios') {
-    if (!v('f1') || !v('f2') || !v('f3')) return alert("Preencha Nome, Login e Senha.");
-    obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
+    if (!getVal('f1') || !getVal('f2') || !getVal('f3')) return alert("Preencha Nome, Login e Senha.");
+    obj = { nome: getVal('f1'), user: getVal('f2'), pass: getVal('f3') };
   }
 
-  // 1. Salva no array em memória
+  // Persiste a alteração no repositório de dados
   if (editIndex !== null) {
     db[dbKey][editIndex] = obj;
   } else {
     db[dbKey].push(obj);
   }
 
-  // 2. Persiste no localStorage
-  saveDatabase();
-
-  // 3. Fecha o modal
+  saveAll();
   closeModal();
 
-  // 4. Atualiza a tela de forma segura (sem interromper o salvamento se der erro de tela)
-  try {
-    renderTable();
-  } catch (errTable) {
-    console.warn("Aviso ao renderizar tabela:", errTable);
-  }
-
-  try {
-    updateDashboard();
-  } catch (errDash) {
-    console.warn("Aviso ao atualizar dashboard:", errDash);
-  }
+  // Atualizações de tela isoladas contra falhas de renderização
+  try { renderTable(); } catch (e) { console.warn("[UI] Erro renderTable:", e); }
+  try { updateDashboard(); } catch (e) { console.warn("[UI] Erro updateDashboard:", e); }
 }
 
 function deleteItem(i) {
-  const dbKey = getSectionDbKey(currentSection);
+  const dbKey = normalizeSectionKey(currentSection);
   const item = (db[dbKey] || [])[i];
   if (!item) return;
 
@@ -743,17 +836,12 @@ function deleteItem(i) {
     if (['ordens', 'vendas_pecas'].includes(dbKey) && item.itens && item.itens.length > 0) {
       if (item.status !== 'Orçamento' && item.status !== 'Cancelado') {
         if (confirm("Deseja devolver a quantidade das peças excluídas de volta ao estoque?")) {
-          item.itens.forEach(it => {
-            if (it.brand) {
-              const t = (db.estoque || []).find(e => e.modelo === it.nome && e.marca === it.brand);
-              if (t) t.qtd += parseInt(it.qtd) || 0;
-            }
-          });
+          InventoryService.restoreStock(item.itens);
         }
       }
     }
     db[dbKey].splice(i, 1);
-    saveDatabase();
+    saveAll();
     renderTable();
     updateDashboard();
   }
@@ -764,37 +852,40 @@ function closeModal() {
   if (modal) modal.style.display = 'none';
 }
 
-// ==========================================
-// 8. DASHBOARD COM MÉTRICAS INTELIGENTES (SEGURO)
-// ==========================================
+// ============================================================================
+// 10. DASHBOARD E PAINEL DE INDICADORES
+// ============================================================================
 function updateDashboard() {
-  const ordens = db.ordens || [];
-  const vendas = db.vendas_pecas || [];
-  const clientes = db.clientes || [];
+  const ordens = Array.isArray(db.ordens) ? db.ordens : [];
+  const vendas = Array.isArray(db.vendas_pecas) ? db.vendas_pecas : [];
+  const clientes = Array.isArray(db.clientes) ? db.clientes : [];
 
-  const fatOS = ordens.filter(o => o.status === 'Concluído').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
+  const fatOS = ordens.filter(o => o && o.status === 'Concluído').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
   const fatVP = vendas.reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
-  const totalOrcamentos = ordens.filter(o => o.status === 'Orçamento').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
+  const totalOrcamentos = ordens.filter(o => o && o.status === 'Orçamento').reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
 
-  setSafeText('dash-faturamento', `R$ ${fatOS.toFixed(2)}`);
-  setSafeText('dash-faturamento-pecas', `R$ ${fatVP.toFixed(2)}`);
-  setSafeText('dash-os-count', ordens.filter(o => o.status === 'Concluído').length);
-  setSafeText('dash-cli-count', clientes.length);
-  setSafeText('dash-orcamentos-total', `R$ ${totalOrcamentos.toFixed(2)}`);
+  setElementText('dash-faturamento', `R$ ${fatOS.toFixed(2)}`);
+  setElementText('dash-faturamento-pecas', `R$ ${fatVP.toFixed(2)}`);
+  setElementText('dash-os-count', ordens.filter(o => o && o.status === 'Concluído').length);
+  setElementText('dash-cli-count', clientes.length);
+  setElementText('dash-orcamentos-total', `R$ ${totalOrcamentos.toFixed(2)}`);
 
   renderCharts();
 }
 
 function renderCharts() {
-  const createChart = (id, dataObj, label, color) => {
-    const ctx = document.getElementById(id);
-    if (!ctx) return;
-    if (chartInstances[id]) chartInstances[id].destroy();
-
-    const labels = Object.keys(dataObj);
-    const values = Object.values(dataObj);
-
+  const createBarChart = (id, dataObj, label, color) => {
     try {
+      const ctx = document.getElementById(id);
+      if (!ctx || !window.Chart) return;
+
+      if (chartInstances[id] && typeof chartInstances[id].destroy === 'function') {
+        chartInstances[id].destroy();
+      }
+
+      const labels = Object.keys(dataObj);
+      const values = Object.values(dataObj);
+
       chartInstances[id] = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -813,7 +904,7 @@ function renderCharts() {
         }
       });
     } catch (e) {
-      console.warn("Chart.js indisponível:", e);
+      console.warn(`[Chart.js] Falha ao renderizar ${id}:`, e);
     }
   };
 
@@ -828,25 +919,25 @@ function renderCharts() {
         }
       });
     }
-    if (o.mecanico && o.mecanico !== 'Geral / Oficina') {
+    if (o && o.mecanico && o.mecanico !== 'Geral / Oficina') {
       mMap[o.mecanico] = (mMap[o.mecanico] || 0) + 1;
     }
   });
 
-  createChart('chartPecas', pMap, 'Peças Vendidas', '#f59e0b');
-  createChart('chartServicos', sMap, 'Serviços Prestados', '#2563eb');
-  createChart('chartMecanicos', mMap, 'Atendimentos Realizados', '#10b981');
+  createBarChart('chartPecas', pMap, 'Peças Vendidas', '#f59e0b');
+  createBarChart('chartServicos', sMap, 'Serviços Prestados', '#2563eb');
+  createBarChart('chartMecanicos', mMap, 'Atendimentos Realizados', '#10b981');
 }
 
-// ==========================================
-// 9. DISPARO DE ORÇAMENTO E RECIBO VIA WHATSAPP
-// ==========================================
+// ============================================================================
+// 11. COMUNICAÇÃO WHATSAPP & IMPRESSÃO DE RECIBOS PDF
+// ============================================================================
 function enviarWhatsApp(i) {
-  const dbKey = getSectionDbKey(currentSection);
+  const dbKey = normalizeSectionKey(currentSection);
   const item = (db[dbKey] || [])[i];
   if (!item) return;
 
-  const cli = (db.clientes || []).find(c => c.nome === item.cliente);
+  const cli = db.clientes.find(c => c.nome === item.cliente);
   let tel = cli ? cli.tel.replace(/\D/g, '') : '';
 
   if (!tel) {
@@ -880,13 +971,10 @@ function enviarWhatsApp(i) {
   window.open(link, '_blank');
 }
 
-// ==========================================
-// 10. IMPRESSÃO DE RECIBOS E PDF
-// ==========================================
 function gerarPDF(i) {
   if (!window.jspdf || !window.jspdf.jsPDF) return alert("Biblioteca jsPDF carregando...");
   const { jsPDF } = window.jspdf;
-  const dbKey = getSectionDbKey(currentSection);
+  const dbKey = normalizeSectionKey(currentSection);
   const data = (db[dbKey] || [])[i];
   if (!data) return;
 
@@ -932,7 +1020,7 @@ function exportarListaPDF() {
   if (!window.jspdf || !window.jspdf.jsPDF) return alert("jsPDF indisponível.");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const dbKey = getSectionDbKey(currentSection);
+  const dbKey = normalizeSectionKey(currentSection);
   const lista = db[dbKey] || [];
 
   doc.setFontSize(14);
@@ -981,9 +1069,9 @@ function filtrarTabela() {
   });
 }
 
-// ==========================================
-// 11. BACKUP E RESTAURAÇÃO DE DADOS
-// ==========================================
+// ============================================================================
+// 12. BACKUP E RESTAURAÇÃO DE DADOS
+// ============================================================================
 function exportarBackupJSON() {
   const jsonStr = JSON.stringify(db, null, 2);
   const blob = new Blob([jsonStr], { type: "application/json" });
@@ -1005,8 +1093,8 @@ function importarBackupJSON(event) {
       const imported = JSON.parse(e.target.result);
       if (imported.clientes && imported.estoque && imported.ordens) {
         if (confirm("Deseja realmente restaurar este backup? Todos os dados atuais deste navegador serão substituídos.")) {
-          db = imported;
-          saveDatabase();
+          db = StorageService.sanitizeDatabase(imported);
+          saveAll();
           renderTable();
           updateDashboard();
           alert("Backup restaurado com sucesso!");
