@@ -5,398 +5,118 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thaynara Auto Vidros | Gestão Pro 25.0</title>
   
-  <!-- FontAwesome -->
+  <!-- Estilos e Ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Chart.js -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Bibliotecas Externas (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- jsPDF & AutoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-  <style>
-    :root {
-      --primary: #0f172a;
-      --primary-dark: #020617;
-      --secondary: #2563eb;
-      --secondary-hover: #1d4ed8;
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --bg-light: #f8fafc;
-      --white: #ffffff;
-      --sidebar-width: 250px;
-      --border: #e2e8f0;
-      --text-dark: #1e293b;
-      --text-muted: #64748b;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg-light); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
-
-    /* LOGIN OVERLAY */
-    #login-overlay {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    .login-box {
-      background: rgba(255, 255, 255, 0.98);
-      padding: 40px 35px;
-      border-radius: 20px;
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    }
-    .login-box img { width: 110px; margin-bottom: 15px; border-radius: 12px; }
-    .login-box h2 { color: var(--primary); font-weight: 800; font-size: 22px; margin-bottom: 5px; }
-    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
-    .login-box input {
-      width: 100%;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 14px;
-      background: #f8fafc;
-      outline: none;
-      transition: 0.2s;
-    }
-    .login-box input:focus { border-color: var(--secondary); background: white; }
-    .login-box button {
-      width: 100%;
-      padding: 12px;
-      background: var(--secondary);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 15px;
-      transition: 0.2s;
-    }
-    .login-box button:hover { background: var(--secondary-hover); }
-
-    /* SIDEBAR */
-    nav {
-      width: var(--sidebar-width);
-      background: var(--primary);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding: 15px 0;
-      transition: 0.3s;
-      flex-shrink: 0;
-    }
-    .nav-logo {
-      text-align: center;
-      padding: 0 10px 18px 10px;
-      border-bottom: 1px solid #1e293b;
-      margin-bottom: 10px;
-    }
-    .nav-logo img { width: 85px; margin-bottom: 8px; border-radius: 8px; }
-    .nav-logo h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
-    
-    .menu-item {
-      padding: 12px 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: 0.2s;
-      color: #94a3b8;
-      font-size: 13.5px;
-      font-weight: 500;
-    }
-    .menu-item:hover, .menu-item.active {
-      background: #1e293b;
-      color: white;
-      border-left: 4px solid var(--secondary);
-    }
-    .menu-item i { width: 18px; font-size: 15px; text-align: center; }
-
-    /* MAIN CONTENT */
-    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    header {
-      height: 65px;
-      background: var(--white);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 25px;
-      border-bottom: 1px solid var(--border);
-    }
-    .welcome-badge {
-      background: #f1f5f9;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .container-content { padding: 22px; overflow-y: auto; flex: 1; }
-
-    /* DASHBOARD CARDS */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-    .stat-card {
-      background: white;
-      padding: 18px 20px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .stat-card h3 { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 700; letter-spacing: 0.5px; }
-    .stat-card p { font-size: 22px; font-weight: 800; color: var(--primary); }
-
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 18px;
-    }
-    .chart-card {
-      background: white;
-      padding: 18px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-    }
-    .chart-card h4 { font-size: 13.5px; font-weight: 700; color: #475569; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-
-    /* TABELAS E BARRA DE AÇÃO */
-    .action-bar {
-      background: white;
-      padding: 14px 18px;
-      border-radius: 14px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      border: 1px solid var(--border);
-    }
-    .search-box { position: relative; flex: 1; max-width: 380px; }
-    .search-box i { position: absolute; left: 14px; top: 11px; color: #94a3b8; font-size: 13px; }
-    .search-box input {
-      width: 100%;
-      padding: 9px 12px 9px 38px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13.5px;
-      outline: none;
-    }
-    .search-box input:focus { border-color: var(--secondary); }
-
-    .table-container {
-      background: white;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      overflow-x: auto;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th {
-      background: #f8fafc;
-      text-align: left;
-      padding: 13px 16px;
-      color: #475569;
-      font-weight: 700;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid #f1f5f9;
-      vertical-align: middle;
-    }
-    tr:hover { background: #f8fafc; }
-
-    /* BOTÕES */
-    .btn {
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 12.5px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: 0.15s;
-    }
-    .btn-add { background: var(--secondary); color: white; }
-    .btn-add:hover { background: var(--secondary-hover); }
-    .btn-success { background: var(--success); color: white; }
-    .btn-success:hover { background: #059669; }
-    .btn-edit { background: #eff6ff; color: #2563eb; }
-    .btn-edit:hover { background: #dbeafe; }
-    .btn-del { background: #fef2f2; color: #dc2626; }
-    .btn-del:hover { background: #fee2e2; }
-    .btn-pdf { background: #f1f5f9; color: #1e293b; border: 1px solid var(--border); }
-    .btn-pdf:hover { background: #e2e8f0; }
-    .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
-
-    /* MODAL */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 5000;
-      backdrop-filter: blur(3px);
-    }
-    .modal-window {
-      background: white;
-      padding: 26px;
-      border-radius: 18px;
-      width: 95%;
-      max-width: 780px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-    }
-    .modal-window h2 { font-size: 17px; color: var(--primary); font-weight: 700; margin-bottom: 16px; }
-    .modal-window label { display: block; margin-top: 10px; font-weight: 600; font-size: 12px; color: #475569; }
-    .modal-window input, .modal-window select, .modal-window textarea {
-      width: 100%;
-      padding: 9px 12px;
-      margin-top: 5px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      background: #f8fafc;
-      outline: none;
-    }
-    .modal-window input:focus, .modal-window select:focus, .modal-window textarea:focus {
-      border-color: var(--secondary);
-      background: white;
-    }
-
-    .item-section {
-      background: #f8fafc;
-      padding: 14px;
-      border-radius: 12px;
-      margin-top: 14px;
-      border: 1px solid var(--border);
-    }
-    .item-row {
-      display: grid;
-      grid-template-columns: 2.5fr 1fr 1fr 38px;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .item-row select, .item-row input { margin-top: 0 !important; }
-
-    .badge-status {
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .badge-low-stock { background: #fee2e2; color: #b91c1c; }
-    .badge-ok-stock { background: #dcfce7; color: #15803d; }
-
-    .hidden { display: none !important; }
-
-    @media (max-width: 768px) {
-      body { flex-direction: column; height: auto; overflow: auto; }
-      nav { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; }
-      main { width: 100%; height: auto; }
-      .sidebar-bottom { display: none; }
-      .menu-item { padding: 10px 12px; font-size: 12px; }
-    }
-  </style>
 </head>
 <body>
 
   <!-- TELA DE LOGIN -->
   <div id="login-overlay">
-    <div class="login-box">
+    <div class="login-card">
       <img src="logo.png" onerror="this.src='https://via.placeholder.com/120x80?text=Auto+Vidros'">
       <h2>Thaynara Auto Vidros</h2>
-      <p>Sistema Pro 25.0 — Gestão Oficina</p>
+      <p>Gestão de Oficina e Autopeças Pro 25.0</p>
       <input type="text" id="loginUser" placeholder="Usuário (admin)">
       <input type="password" id="loginPass" placeholder="Senha (123)">
       <button onclick="handleLogin()">Acessar Sistema</button>
-      <div id="login-err" style="color:var(--danger); margin-top:10px; font-weight:600; font-size:12px; display:none;">Usuário ou senha incorretos!</div>
+      <div id="login-err" style="color:var(--danger); margin-top:12px; font-weight:700; font-size:12px; display:none;">Usuário ou senha incorretos!</div>
     </div>
   </div>
 
-  <!-- MENU LATERAL -->
-  <nav>
-    <div class="nav-logo">
+  <!-- MENU LATERAL RESPONSIVO -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
       <img src="logo.png" onerror="this.src='https://via.placeholder.com/80x55?text=LOGO'">
       <h3>Auto Vidros Pro</h3>
     </div>
-    <div class="menu-item active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-line"></i> Dashboard</div>
-    <div class="menu-item" onclick="showSection('ordens', this)"><i class="fas fa-file-invoice-dollar"></i> Ordens de Serviço</div>
-    <div class="menu-item" onclick="showSection('vendas_pecas', this)"><i class="fas fa-shopping-cart"></i> Venda de Peças</div>
-    <div class="menu-item" onclick="showSection('clientes', this)"><i class="fas fa-users"></i> Clientes</div>
-    <div class="menu-item" onclick="showSection('funcionarios', this)"><i class="fas fa-user-gear"></i> Funcionários</div>
-    <div class="menu-item" onclick="showSection('servicos', this)"><i class="fas fa-tools"></i> Serviços</div>
-    <div class="menu-item" onclick="showSection('estoque', this)"><i class="fas fa-boxes-stacked"></i> Estoque</div>
-    <div class="menu-item" onclick="showSection('usuarios', this)"><i class="fas fa-shield-halved"></i> Usuários</div>
     
-    <div class="sidebar-bottom" style="margin-top: auto; padding: 15px 20px;">
-      <button class="btn btn-pdf btn-sm w-100 mb-2" onclick="exportarBackupJSON()"><i class="fas fa-download"></i> Backup JSON</button>
+    <div class="sidebar-menu">
+      <div class="nav-item active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-pie"></i> Dashboard</div>
+      <div class="nav-item" onclick="showSection('ordens', this)"><i class="fas fa-file-invoice-dollar"></i> Ordens de Serviço</div>
+      <div class="nav-item" onclick="showSection('vendas_pecas', this)"><i class="fas fa-cart-shopping"></i> Venda de Peças</div>
+      <div class="nav-item" onclick="showSection('clientes', this)"><i class="fas fa-users"></i> Clientes</div>
+      <div class="nav-item" onclick="showSection('funcionarios', this)"><i class="fas fa-user-gear"></i> Funcionários</div>
+      <div class="nav-item" onclick="showSection('servicos', this)"><i class="fas fa-tools"></i> Serviços</div>
+      <div class="nav-item" onclick="showSection('estoque', this)"><i class="fas fa-boxes-stacked"></i> Estoque</div>
+      <div class="nav-item" onclick="showSection('usuarios', this)"><i class="fas fa-shield-halved"></i> Usuários</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn-ui btn-light-ui btn-action w-100 mb-2" onclick="exportarBackupJSON()"><i class="fas fa-download"></i> Backup JSON</button>
       <input type="file" id="importFileInput" style="display:none" onchange="importarBackupJSON(event)">
-      <button class="btn btn-pdf btn-sm w-100 mb-2" onclick="document.getElementById('importFileInput').click()"><i class="fas fa-upload"></i> Restaurar</button>
-      <div class="menu-item p-0" onclick="handleLogout()" style="color: #fb7185; cursor:pointer;"><i class="fas fa-power-off"></i> Sair</div>
+      <button class="btn-ui btn-light-ui btn-action w-100 mb-2" onclick="document.getElementById('importFileInput').click()"><i class="fas fa-upload"></i> Restaurar</button>
+      <div class="nav-item p-0" onclick="handleLogout()" style="color: #fb7185; justify-content:center;"><i class="fas fa-power-off"></i> Sair</div>
     </div>
   </nav>
 
-  <!-- PAINEL PRINCIPAL -->
-  <main>
-    <header>
-      <h2 id="page-title" style="font-size:18px; font-weight:700;">Dashboard</h2>
-      <div class="welcome-badge">
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 id="page-title" class="topbar-title"><i class="fas fa-chart-pie text-primary"></i> Painel Geral e Indicadores</h2>
+      <div class="user-badge">
         <i class="fas fa-circle-user fa-lg text-primary"></i> <span id="welcomeName">Administrador</span>
       </div>
     </header>
 
-    <div class="container-content">
-      <!-- DASHBOARD -->
+    <div class="view-container">
+      <!-- PAINEL DASHBOARD -->
       <section id="sec-dashboard">
-        <div class="stats-grid">
-          <div class="stat-card"><h3>Faturamento Oficina (OS)</h3><p id="dash-faturamento">R$ 0,00</p></div>
-          <div class="stat-card"><h3>Vendas Balcão</h3><p id="dash-faturamento-pecas">R$ 0,00</p></div>
-          <div class="stat-card"><h3>Total OS Concluídas</h3><p id="dash-os-count">0</p></div>
-          <div class="stat-card"><h3>Clientes Cadastrados</h3><p id="dash-cli-count">0</p></div>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-info"><h4>Faturamento Oficina (OS)</h4><p id="dash-faturamento">R$ 0,00</p></div>
+            <div class="stat-icon icon-blue"><i class="fas fa-wrench"></i></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-info"><h4>Vendas Balcão</h4><p id="dash-faturamento-pecas">R$ 0,00</p></div>
+            <div class="stat-icon icon-green"><i class="fas fa-cart-shopping"></i></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-info"><h4>OS Concluídas</h4><p id="dash-os-count">0</p></div>
+            <div class="stat-icon icon-orange"><i class="fas fa-check-double"></i></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-info"><h4>Clientes Ativos</h4><p id="dash-cli-count">0</p></div>
+            <div class="stat-icon icon-purple"><i class="fas fa-users"></i></div>
+          </div>
         </div>
-        <div class="charts-grid">
-          <div class="chart-card"><h4><i class="fas fa-box text-warning"></i> Peças Mais Vendidas</h4><canvas id="chartPecas" height="180"></canvas></div>
-          <div class="chart-card"><h4><i class="fas fa-wrench text-primary"></i> Serviços Mais Realizados</h4><canvas id="chartServicos" height="180"></canvas></div>
-          <div class="chart-card"><h4><i class="fas fa-user-check text-success"></i> Atendimentos por Mecânico</h4><canvas id="chartMecanicos" height="180"></canvas></div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h4><i class="fas fa-box text-warning"></i> Peças Mais Vendidas (Estoque)</h4>
+            <canvas id="chartPecas" height="170"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4><i class="fas fa-screwdriver-wrench text-primary"></i> Serviços Mais Demandados</h4>
+            <canvas id="chartServicos" height="170"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4><i class="fas fa-user-check text-success"></i> Produtividade por Mecânico</h4>
+            <canvas id="chartMecanicos" height="170"></canvas>
+          </div>
         </div>
       </section>
 
-      <!-- TABELAS DE CADASTRO -->
+      <!-- PAINEL DE TABELAS -->
       <section id="sec-tabelas" class="hidden">
-        <div class="action-bar">
-          <div class="search-box">
+        <div class="action-toolbar">
+          <div class="search-wrapper">
             <i class="fas fa-search"></i>
             <input type="text" id="mainSearch" placeholder="Pesquisar registros..." onkeyup="filtrarTabela()">
           </div>
           <div style="display:flex; gap:10px;">
-            <button class="btn btn-pdf" onclick="exportarListaPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
-            <button class="btn btn-add" onclick="openModal()"><i class="fas fa-plus"></i> Novo Cadastro</button>
+            <button class="btn-ui btn-light-ui" onclick="exportarListaPDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+            <button class="btn-ui btn-primary-ui" onclick="openModal()"><i class="fas fa-plus"></i> Novo Registro</button>
           </div>
         </div>
-        <div class="table-container">
-          <table>
+        
+        <div class="table-card">
+          <table class="data-table">
             <thead id="table-head"></thead>
             <tbody id="table-body"></tbody>
           </table>
@@ -405,721 +125,19 @@
     </div>
   </main>
 
-  <!-- MODAL DE CADASTRO / EDIÇÃO -->
-  <div id="modal" class="modal-backdrop">
-    <div class="modal-window">
-      <h2 id="modal-title">Cadastro</h2>
+  <!-- MODAL DE CADASTRO E EDIÇÃO -->
+  <div id="modal" class="modal-layer">
+    <div class="modal-dialog-ui">
+      <h3 id="modal-title">Novo Cadastro</h3>
       <div id="modal-fields"></div>
-      <div style="display:flex; gap:12px; margin-top:25px;">
-        <button class="btn btn-success" style="flex:1;" onclick="handleSave()"><i class="fas fa-save"></i> Salvar Registro</button>
-        <button class="btn btn-pdf" style="flex:1;" onclick="closeModal()">Cancelar</button>
+      <div style="display:flex; gap:12px; margin-top:24px;">
+        <button class="btn-ui btn-success-ui" style="flex:1; justify-content:center;" onclick="handleSave()"><i class="fas fa-save"></i> Salvar Registro</button>
+        <button class="btn-ui btn-light-ui" style="flex:1; justify-content:center;" onclick="closeModal()">Cancelar</button>
       </div>
     </div>
   </div>
 
-  <script>
-    // ==========================================
-    // CAMADA DE DADOS E BANCO DE DADOS (LOCALSTORAGE)
-    // ==========================================
-    const safeGet = (k, def) => {
-      try {
-        const val = JSON.parse(localStorage.getItem(k));
-        return Array.isArray(val) ? val : def;
-      } catch (e) {
-        return def;
-      }
-    };
-
-    let db = {
-      clientes: safeGet('th_cli_v25', []),
-      funcionarios: safeGet('th_func_v25', []),
-      servicos: safeGet('th_serv_v25', []),
-      estoque: safeGet('th_est_v25', []),
-      ordens: safeGet('th_ord_v25', []),
-      vendas_pecas: safeGet('th_vp_v25', []),
-      usuarios: safeGet('th_user_v25', [{ nome: "Admin", user: "admin", pass: "123" }])
-    };
-
-    let currentSection = 'dashboard';
-    let editIndex = null;
-    let chartRefs = {};
-
-    function saveAll() {
-      localStorage.setItem('th_cli_v25', JSON.stringify(db.clientes));
-      localStorage.setItem('th_func_v25', JSON.stringify(db.funcionarios));
-      localStorage.setItem('th_serv_v25', JSON.stringify(db.servicos));
-      localStorage.setItem('th_est_v25', JSON.stringify(db.estoque));
-      localStorage.setItem('th_ord_v25', JSON.stringify(db.ordens));
-      localStorage.setItem('th_vp_v25', JSON.stringify(db.vendas_pecas));
-      localStorage.setItem('th_user_v25', JSON.stringify(db.usuarios));
-    }
-
-    // ==========================================
-    // AUTENTICAÇÃO
-    // ==========================================
-    function handleLogin() {
-      const u = document.getElementById('loginUser').value.trim();
-      const p = document.getElementById('loginPass').value.trim();
-      const user = db.usuarios.find(x => x.user === u && x.pass === p);
-
-      if (user) {
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('welcomeName').innerText = user.nome;
-        updateDashboard();
-      } else {
-        const err = document.getElementById('login-err');
-        err.style.display = 'block';
-        setTimeout(() => err.style.display = 'none', 2500);
-      }
-    }
-
-    function handleLogout() {
-      if (confirm("Deseja sair do sistema?")) {
-        document.getElementById('loginUser').value = '';
-        document.getElementById('loginPass').value = '';
-        document.getElementById('login-overlay').style.display = 'flex';
-      }
-    }
-
-    // ==========================================
-    // NAVEGAÇÃO E VISUALIZAÇÃO
-    // ==========================================
-    function showSection(sec, el) {
-      currentSection = sec;
-      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-      if (el) el.classList.add('active');
-
-      const titleMap = {
-        dashboard: "Dashboard",
-        ordens: "Ordens de Serviço",
-        vendas_pecas: "Venda de Peças (Balcão)",
-        clientes: "Cadastro de Clientes",
-        funcionarios: "Cadastro de Funcionários",
-        servicos: "Catálogo de Serviços",
-        estoque: "Controle de Estoque",
-        usuarios: "Gerenciamento de Usuários"
-      };
-
-      document.getElementById('page-title').innerText = titleMap[sec] || "Auto Vidros";
-      document.getElementById('sec-dashboard').classList.add('hidden');
-      document.getElementById('sec-tabelas').classList.add('hidden');
-
-      if (sec === 'dashboard') {
-        document.getElementById('sec-dashboard').classList.remove('hidden');
-        updateDashboard();
-      } else {
-        document.getElementById('sec-tabelas').classList.remove('hidden');
-        document.getElementById('mainSearch').value = '';
-        renderTable();
-      }
-    }
-
-    // ==========================================
-    // RENDERIZAÇÃO DE TABELAS (CORREÇÃO DE CHAVES)
-    // ==========================================
-    function renderTable() {
-      const head = document.getElementById('table-head');
-      const body = document.getElementById('table-body');
-      body.innerHTML = '';
-
-      const configs = {
-        clientes: {
-          headers: ['Nome', 'CPF', 'RG', 'Telefone', 'Endereço'],
-          fields: ['nome', 'cpf', 'rg', 'tel', 'endereco']
-        },
-        funcionarios: {
-          headers: ['Nome', 'Função', 'CPF', 'Telefone', 'Endereço'],
-          fields: ['nome', 'funcao', 'cpf', 'tel', 'endereco']
-        },
-        servicos: {
-          headers: ['Serviço', 'Preço Sugerido (R$)'],
-          fields: ['nome', 'preco']
-        },
-        estoque: {
-          headers: ['Marca', 'Modelo / Peça', 'Quantidade', 'Preço Venda (R$)', 'Status'],
-          fields: ['marca', 'modelo', 'qtd', 'preco', 'status']
-        },
-        ordens: {
-          headers: ['Nº OS', 'Data', 'Cliente', 'Veículo', 'Mecânico', 'Total (R$)'],
-          fields: ['id', 'data', 'cliente', 'veiculo', 'mecanico', 'total']
-        },
-        vendas_pecas: {
-          headers: ['Nº Venda', 'Data', 'Cliente', 'Total (R$)'],
-          fields: ['id', 'data', 'cliente', 'total']
-        },
-        usuarios: {
-          headers: ['Nome', 'Usuário / Login'],
-          fields: ['nome', 'user']
-        }
-      };
-
-      const cfg = configs[currentSection];
-      if (!cfg) return;
-
-      head.innerHTML = `<tr>${cfg.headers.map(h => `<th>${h}</th>`).join('')}<th style="width:140px; text-align:center;">Ações</th></tr>`;
-
-      const lista = db[currentSection] || [];
-
-      if (lista.length === 0) {
-        body.innerHTML = `<tr><td colspan="${cfg.headers.length + 1}" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum registro cadastrado no momento.</td></tr>`;
-        return;
-      }
-
-      lista.forEach((item, i) => {
-        const tr = document.createElement('tr');
-        
-        let colsHtml = cfg.fields.map(f => {
-          let val = item[f] || '-';
-          if (f === 'preco' || f === 'total') val = `R$ ${parseFloat(val || 0).toFixed(2)}`;
-          if (f === 'status') {
-            const min = parseInt(item.minimo) || 2;
-            const qtd = parseInt(item.qtd) || 0;
-            val = qtd <= min 
-              ? `<span class="badge-status badge-low-stock"><i class="fas fa-triangle-exclamation"></i> Baixo (${qtd})</span>` 
-              : `<span class="badge-status badge-ok-stock"><i class="fas fa-check"></i> Normal (${qtd})</span>`;
-          }
-          return `<td>${val}</td>`;
-        }).join('');
-
-        let btnAcoes = `<div style="display:flex; gap:6px; justify-content:center;">`;
-        if (['ordens', 'vendas_pecas'].includes(currentSection)) {
-          btnAcoes += `<button class="btn btn-pdf btn-sm" onclick="gerarPDF(${i})" title="Imprimir Comprovante"><i class="fas fa-file-pdf"></i></button>`;
-        }
-        btnAcoes += `<button class="btn btn-edit btn-sm" onclick="openModal(${i})" title="Editar"><i class="fas fa-edit"></i></button>`;
-        btnAcoes += `<button class="btn btn-del btn-sm" onclick="deleteItem(${i})" title="Excluir"><i class="fas fa-trash"></i></button>`;
-        btnAcoes += `</div>`;
-
-        tr.innerHTML = colsHtml + `<td>${btnAcoes}</td>`;
-        body.appendChild(tr);
-      });
-    }
-
-    // ==========================================
-    // MODAIS E FORMULÁRIOS
-    // ==========================================
-    function openModal(index = null) {
-      editIndex = index;
-      const fields = document.getElementById('modal-fields');
-      fields.innerHTML = '';
-      document.getElementById('modal').style.display = 'flex';
-
-      const d = index !== null ? db[currentSection][index] : {};
-      document.getElementById('modal-title').innerText = index !== null ? `Editar ${currentSection}` : `Novo Registro em ${currentSection}`;
-
-      if (currentSection === 'clientes') {
-        fields.innerHTML = `
-          <label>Nome Completo *</label><input id="f1" value="${d.nome || ''}">
-          <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>CPF</label><input id="f2" value="${d.cpf || ''}"></div>
-            <div style="flex:1;"><label>RG</label><input id="f3" value="${d.rg || ''}"></div>
-          </div>
-          <label>Telefone / WhatsApp *</label><input id="f4" value="${d.tel || ''}">
-          <label>Endereço</label><textarea id="f5" rows="2">${d.endereco || ''}</textarea>
-        `;
-      } else if (currentSection === 'funcionarios') {
-        fields.innerHTML = `
-          <label>Nome Completo *</label><input id="f1" value="${d.nome || ''}">
-          <label>Função / Cargo *</label><input id="f2" value="${d.funcao || ''}">
-          <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>CPF</label><input id="f3" value="${d.cpf || ''}"></div>
-            <div style="flex:1;"><label>RG</label><input id="f4" value="${d.rg || ''}"></div>
-          </div>
-          <label>Telefone</label><input id="f6" value="${d.tel || ''}">
-          <label>Endereço</label><textarea id="f5" rows="2">${d.endereco || ''}</textarea>
-        `;
-      } else if (currentSection === 'estoque') {
-        fields.innerHTML = `
-          <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>Marca / Fabricante *</label><input id="f1" value="${d.marca || ''}"></div>
-            <div style="flex:1;"><label>Modelo / Peça *</label><input id="f2" value="${d.modelo || ''}"></div>
-          </div>
-          <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>Quantidade em Estoque *</label><input id="f3" type="number" value="${d.qtd !== undefined ? d.qtd : ''}"></div>
-            <div style="flex:1;"><label>Preço de Venda (R$) *</label><input id="f4" type="number" step="0.01" value="${d.preco || ''}"></div>
-            <div style="flex:1;"><label>Estoque Mínimo</label><input id="f5" type="number" value="${d.minimo || '2'}"></div>
-          </div>
-        `;
-      } else if (currentSection === 'servicos') {
-        fields.innerHTML = `
-          <label>Descrição do Serviço *</label><input id="f1" value="${d.nome || ''}">
-          <label>Preço Sugerido (R$) *</label><input id="f2" type="number" step="0.01" value="${d.preco || ''}">
-        `;
-      } else if (currentSection === 'usuarios') {
-        fields.innerHTML = `
-          <label>Nome do Colaborador *</label><input id="f1" value="${d.nome || ''}">
-          <label>Usuário de Login *</label><input id="f2" value="${d.user || ''}">
-          <label>Senha de Acesso *</label><input id="f3" type="password" value="${d.pass || ''}">
-        `;
-      } else if (currentSection === 'vendas_pecas') {
-        const cliOpts = db.clientes.map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
-        fields.innerHTML = `
-          <label>Cliente</label>
-          <select id="f1"><option value="Consumidor Final">Consumidor Final</option>${cliOpts}</select>
-          <div class="item-section">
-            <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-boxes-stacked text-primary"></i> Peças da Venda</h4>
-            <div id="venda-rows"></div>
-            <button type="button" class="btn btn-add btn-sm mt-2" onclick="addItemRow('venda-rows', true)"><i class="fas fa-plus"></i> Adicionar Peça</button>
-          </div>
-          <h3 style="margin-top:20px; font-size:16px; color:var(--primary);">Total da Venda: R$ <span id="displayTotal">0.00</span></h3>
-          <input type="hidden" id="fTotal" value="0">
-        `;
-        if (index === null || !d.itens) {
-          addItemRow('venda-rows', true);
-        } else {
-          d.itens.forEach(it => addItemRow('venda-rows', true, it));
-        }
-      } else if (currentSection === 'ordens') {
-        const cliOpts = db.clientes.map(c => `<option value="${c.nome}" ${d.cliente === c.nome ? 'selected' : ''}>${c.nome}</option>`).join('');
-        const mecOpts = db.funcionarios.map(f => `<option value="${f.nome}" ${d.mecanico === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
-        fields.innerHTML = `
-          <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>Cliente *</label><select id="f1"><option value="">Selecione o Cliente...</option>${cliOpts}</select></div>
-            <div style="flex:1;"><label>Mecânico Responsável</label><select id="fMec"><option value="Não informado">Selecione o Mecânico...</option>${mecOpts}</select></div>
-          </div>
-          <label>Veículo / Modelo / Placa *</label><input id="f2" placeholder="Ex: Corsa 2012 - ABC-1234" value="${d.veiculo || ''}">
-          
-          <div class="item-section">
-            <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-tools text-primary"></i> Serviços Prestados</h4>
-            <div id="serv-rows"></div>
-            <button type="button" class="btn btn-add btn-sm mt-2" onclick="addItemRow('serv-rows', false)"><i class="fas fa-plus"></i> Adicionar Serviço</button>
-          </div>
-
-          <div class="item-section mt-3">
-            <h4 style="font-size:13px; font-weight:700; margin-bottom:10px;"><i class="fas fa-boxes-stacked text-warning"></i> Peças Utilizadas</h4>
-            <div id="peca-rows"></div>
-            <button type="button" class="btn btn-add btn-sm mt-2" onclick="addItemRow('peca-rows', true)"><i class="fas fa-plus"></i> Adicionar Peça</button>
-          </div>
-
-          <h3 style="margin-top:20px; font-size:16px; color:var(--primary);">Total Geral da OS: R$ <span id="displayTotal">0.00</span></h3>
-          <input type="hidden" id="fTotal" value="0">
-        `;
-        if (index === null || !d.itens) {
-          addItemRow('serv-rows', false);
-          addItemRow('peca-rows', true);
-        } else {
-          d.itens.filter(i => !i.brand).forEach(it => addItemRow('serv-rows', false, it));
-          d.itens.filter(i => i.brand).forEach(it => addItemRow('peca-rows', true, it));
-        }
-      }
-      calcTotal();
-    }
-
-    function addItemRow(containerId, isPart, data = null) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-
-      const div = document.createElement('div');
-      div.className = 'item-row';
-
-      let opts = isPart
-        ? db.estoque.map(e => `<option value="${e.preco}" data-name="${e.modelo}" data-brand="${e.marca}" ${data && data.nome === e.modelo ? 'selected' : ''}>${e.modelo} (${e.marca}) - Saldo: ${e.qtd} un - R$ ${parseFloat(e.preco).toFixed(2)}</option>`).join('')
-        : db.servicos.map(s => `<option value="${s.preco}" data-name="${s.nome}" ${data && data.nome === s.nome ? 'selected' : ''}>${s.nome} - R$ ${parseFloat(s.preco).toFixed(2)}</option>`).join('');
-
-      div.innerHTML = `
-        <select class="item-select" onchange="calcTotal()">
-          <option value="0">Selecione o ${isPart ? 'Produto/Peça' : 'Serviço'}...</option>
-          ${opts}
-        </select>
-        <input type="number" class="item-qty" value="${data ? data.qtd : 1}" min="1" onchange="calcTotal()">
-        <input type="text" class="item-price" readonly value="0.00">
-        <button type="button" class="btn btn-del btn-sm" onclick="this.parentElement.remove(); calcTotal();"><i class="fas fa-times"></i></button>
-      `;
-      container.appendChild(div);
-      calcTotal();
-    }
-
-    function calcTotal() {
-      let total = 0;
-      document.querySelectorAll('.item-row').forEach(row => {
-        const sel = row.querySelector('.item-select');
-        const qty = parseInt(row.querySelector('.item-qty').value) || 1;
-        const price = parseFloat(sel.value) || 0;
-        const sub = price * qty;
-        row.querySelector('.item-price').value = sub.toFixed(2);
-        total += sub;
-      });
-
-      const d = document.getElementById('displayTotal');
-      if (d) d.innerText = total.toFixed(2);
-      const f = document.getElementById('fTotal');
-      if (f) f.value = total.toFixed(2);
-    }
-
-    // ==========================================
-    // SALVAR COM VALIDAÇÃO E CONTROLE DE ESTOQUE
-    // ==========================================
-    function handleSave() {
-      const v = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : '';
-
-      try {
-        let obj = {};
-
-        if (['ordens', 'vendas_pecas'].includes(currentSection)) {
-          const items = [];
-          let estoqueInsuficiente = false;
-          let msgEstoque = '';
-
-          document.querySelectorAll('.item-row').forEach(row => {
-            const sel = row.querySelector('.item-select');
-            if (sel && sel.selectedIndex > 0) {
-              const opt = sel.options[sel.selectedIndex];
-              const brand = opt.getAttribute('data-brand') || '';
-              const name = opt.getAttribute('data-name');
-              const qty = parseInt(row.querySelector('.item-qty').value) || 0;
-              const preco = parseFloat(sel.value) || 0;
-
-              if (qty > 0) {
-                // Validação de saldo de estoque para peças
-                if (brand) {
-                  const itemEstoque = db.estoque.find(e => e.modelo === name && e.marca === brand);
-                  if (itemEstoque && editIndex === null) {
-                    if (itemEstoque.qtd < qty) {
-                      estoqueInsuficiente = true;
-                      msgEstoque = `Saldo insuficiente para "${name} (${brand})". Disponível: ${itemEstoque.qtd}, Solicitado: ${qty}.`;
-                    }
-                  }
-                }
-                items.push({ nome, brand, qtd: qty, preco });
-              }
-            }
-          });
-
-          if (estoqueInsuficiente) {
-            alert(msgEstoque);
-            return;
-          }
-
-          if (v('f1') === '') {
-            alert("Por favor, selecione ou informe o Cliente.");
-            return;
-          }
-
-          if (items.length === 0) {
-            alert("Adicione pelo menos um serviço ou peça com quantidade maior que zero.");
-            return;
-          }
-
-          if (currentSection === 'ordens' && v('f2') === '') {
-            alert("Por favor, informe os dados do Veículo / Placa.");
-            return;
-          }
-
-          // Realiza baixa de estoque
-          if (editIndex === null) {
-            items.forEach(it => {
-              if (it.brand) {
-                const target = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
-                if (target) {
-                  target.qtd -= it.qtd;
-                  if (target.qtd < 0) target.qtd = 0;
-                }
-              }
-            });
-          }
-
-          obj = {
-            id: editIndex !== null ? db[currentSection][editIndex].id : ("N" + Math.floor(1000 + Math.random() * 9000)),
-            data: editIndex !== null ? db[currentSection][editIndex].data : new Date().toLocaleDateString('pt-BR'),
-            cliente: v('f1'),
-            total: v('fTotal'),
-            itens: items
-          };
-
-          if (currentSection === 'ordens') {
-            obj.mecanico = v('fMec') || 'Não informado';
-            obj.veiculo = v('f2');
-          }
-
-        } else if (currentSection === 'clientes') {
-          if (!v('f1')) return alert("O Nome do cliente é obrigatório!");
-          obj = { nome: v('f1'), cpf: v('f2'), rg: v('f3'), tel: v('f4'), endereco: v('f5') };
-
-        } else if (currentSection === 'funcionarios') {
-          if (!v('f1')) return alert("O Nome do funcionário é obrigatório!");
-          obj = { nome: v('f1'), funcao: v('f2'), cpf: v('f3'), rg: v('f4'), endereco: v('f5'), tel: v('f6') };
-
-        } else if (currentSection === 'estoque') {
-          if (!v('f1') || !v('f2')) return alert("Marca e Modelo são obrigatórios!");
-          obj = {
-            marca: v('f1'),
-            modelo: v('f2'),
-            qtd: parseInt(v('f3')) || 0,
-            preco: parseFloat(v('f4')) || 0,
-            minimo: parseInt(v('f5')) || 2
-          };
-
-        } else if (currentSection === 'servicos') {
-          if (!v('f1')) return alert("A Descrição do serviço é obrigatória!");
-          obj = { nome: v('f1'), preco: parseFloat(v('f2')) || 0 };
-
-        } else if (currentSection === 'usuarios') {
-          if (!v('f1') || !v('f2') || !v('f3')) return alert("Preencha Nome, Usuário e Senha!");
-          obj = { nome: v('f1'), user: v('f2'), pass: v('f3') };
-        }
-
-        if (editIndex !== null) {
-          db[currentSection][editIndex] = obj;
-        } else {
-          db[currentSection].push(obj);
-        }
-
-        saveAll();
-        closeModal();
-        renderTable();
-        updateDashboard();
-
-      } catch (err) {
-        console.error("Erro ao salvar:", err);
-        alert("Ocorreu um erro ao salvar o registro. Verifique os dados inseridos.");
-      }
-    }
-
-    // ==========================================
-    // EXCLUSÃO COM DEVOLUÇÃO AO ESTOQUE
-    // ==========================================
-    function deleteItem(i) {
-      const item = db[currentSection][i];
-      if (!item) return;
-
-      if (confirm(`Deseja realmente excluir o registro selecionado?`)) {
-        // Se for OS ou Venda, pergunta se deseja estornar os produtos ao estoque
-        if (['ordens', 'vendas_pecas'].includes(currentSection) && item.itens && item.itens.length > 0) {
-          if (confirm("Deseja devolver a quantidade das peças excluídas de volta ao estoque?")) {
-            item.itens.forEach(it => {
-              if (it.brand) {
-                const target = db.estoque.find(e => e.modelo === it.nome && e.marca === it.brand);
-                if (target) target.qtd += parseInt(it.qtd) || 0;
-              }
-            });
-          }
-        }
-
-        db[currentSection].splice(i, 1);
-        saveAll();
-        renderTable();
-        updateDashboard();
-      }
-    }
-
-    function closeModal() {
-      document.getElementById('modal').style.display = 'none';
-    }
-
-    // ==========================================
-    // DASHBOARD E GRÁFICOS
-    // ==========================================
-    function updateDashboard() {
-      const fatOS = db.ordens.reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
-      const fatVP = db.vendas_pecas.reduce((a, b) => a + (parseFloat(b.total) || 0), 0);
-
-      document.getElementById('dash-faturamento').innerText = `R$ ${fatOS.toFixed(2)}`;
-      document.getElementById('dash-faturamento-pecas').innerText = `R$ ${fatVP.toFixed(2)}`;
-      document.getElementById('dash-os-count').innerText = db.ordens.length;
-      document.getElementById('dash-cli-count').innerText = db.clientes.length;
-
-      renderCharts();
-    }
-
-    function renderCharts() {
-      const createBar = (id, dataObj, label, color) => {
-        const ctx = document.getElementById(id);
-        if (!ctx) return;
-        if (chartRefs[id]) chartRefs[id].destroy();
-
-        const labels = Object.keys(dataObj);
-        const values = Object.values(dataObj);
-
-        chartRefs[id] = new Chart(ctx.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: labels.length > 0 ? labels : ['Sem dados'],
-            datasets: [{
-              label: label,
-              data: values.length > 0 ? values : [0],
-              backgroundColor: color,
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-          }
-        });
-      };
-
-      const pMap = {}, sMap = {}, mMap = {};
-      db.ordens.concat(db.vendas_pecas).forEach(o => {
-        if (o.itens && Array.isArray(o.itens)) {
-          o.itens.forEach(it => {
-            if (it.brand) pMap[it.nome] = (pMap[it.nome] || 0) + (parseInt(it.qtd) || 0);
-            else sMap[it.nome] = (sMap[it.nome] || 0) + (parseInt(it.qtd) || 1);
-          });
-        }
-        if (o.mecanico && o.mecanico !== 'Não informado') {
-          mMap[o.mecanico] = (mMap[o.mecanico] || 0) + 1;
-        }
-      });
-
-      createBar('chartPecas', pMap, 'Unidades Vendidas', '#f59e0b');
-      createBar('chartServicos', sMap, 'Vezes Executado', '#3b82f6');
-      createBar('chartMecanicos', mMap, 'Ordens Concluídas', '#10b981');
-    }
-
-    // ==========================================
-    // IMPRESSÃO DE RECIBOS E PDF INDIVIDUAL
-    // ==========================================
-    function gerarPDF(i) {
-      if (!window.jspdf || !window.jspdf.jsPDF) {
-        alert("A biblioteca jsPDF ainda está carregando ou não pôde ser iniciada.");
-        return;
-      }
-
-      const { jsPDF } = window.jspdf;
-      const data = db[currentSection][i];
-      if (!data) return;
-
-      const doc = new jsPDF();
-      const agora = new Date().toLocaleString('pt-BR');
-
-      doc.setFontSize(20);
-      doc.text("THAYNARA AUTO VIDROS", 105, 20, { align: 'center' });
-      doc.setFontSize(9);
-      doc.text(`Emissão: ${agora}`, 190, 10, { align: 'right' });
-      doc.setFontSize(13);
-      doc.text(currentSection === 'ordens' ? "ORDEM DE SERVIÇO" : "COMPROVANTE DE VENDA", 105, 28, { align: 'center' });
-      
-      doc.setLineWidth(0.5);
-      doc.line(15, 34, 195, 34);
-
-      doc.setFontSize(10);
-      doc.text(`Identificador: ${data.id}  |  Data: ${data.data}`, 15, 42);
-      doc.text(`Cliente: ${data.cliente}`, 15, 48);
-
-      if (data.veiculo) {
-        doc.text(`Veículo: ${data.veiculo}  |  Mecânico: ${data.mecanico}`, 15, 54);
-      }
-
-      const rows = (data.itens || []).map(it => [
-        it.nome + (it.brand ? ` (${it.brand})` : ''),
-        it.qtd,
-        `R$ ${parseFloat(it.preco || 0).toFixed(2)}`,
-        `R$ ${(it.qtd * it.preco).toFixed(2)}`
-      ]);
-
-      doc.autoTable({
-        head: [['Item / Descrição', 'Qtd', 'Preço Unitário', 'Subtotal']],
-        body: rows,
-        startY: data.veiculo ? 60 : 54,
-        theme: 'striped',
-        headStyles: { fillColor: [15, 23, 42] }
-      });
-
-      const finalY = doc.autoTable.previous.finalY || 120;
-      doc.setFontSize(13);
-      doc.text(`TOTAL: R$ ${parseFloat(data.total || 0).toFixed(2)}`, 190, finalY + 15, { align: 'right' });
-
-      doc.save(`${data.id}_Thaynara_AutoVidros.pdf`);
-    }
-
-    // ==========================================
-    // EXPORTAR RELATÓRIO DA TABELA EM PDF
-    // ==========================================
-    function exportarListaPDF() {
-      if (!window.jspdf || !window.jspdf.jsPDF) return alert("jsPDF indisponível.");
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const lista = db[currentSection] || [];
-
-      doc.setFontSize(14);
-      doc.text(`Relatório - ${currentSection.toUpperCase()} (${new Date().toLocaleDateString('pt-BR')})`, 14, 15);
-
-      if (lista.length === 0) {
-        doc.setFontSize(10);
-        doc.text("Nenhum dado registrado para esta seção.", 14, 25);
-      } else {
-        let headers = [];
-        let rows = [];
-
-        if (currentSection === 'clientes') {
-          headers = ['Nome', 'CPF', 'Telefone', 'Endereço'];
-          rows = lista.map(c => [c.nome, c.cpf, c.tel, c.endereco]);
-        } else if (currentSection === 'estoque') {
-          headers = ['Marca', 'Modelo', 'Quantidade', 'Preço Venda (R$)'];
-          rows = lista.map(e => [e.marca, e.modelo, e.qtd, `R$ ${parseFloat(e.preco).toFixed(2)}`]);
-        } else if (['ordens', 'vendas_pecas'].includes(currentSection)) {
-          headers = ['Nº', 'Data', 'Cliente', 'Total (R$)'];
-          rows = lista.map(o => [o.id, o.data, o.cliente, `R$ ${parseFloat(o.total).toFixed(2)}`]);
-        } else {
-          headers = Object.keys(lista[0]).filter(k => k !== 'itens');
-          rows = lista.map(item => headers.map(h => item[h]));
-        }
-
-        doc.autoTable({
-          head: [headers],
-          body: rows,
-          startY: 22,
-          theme: 'grid',
-          headStyles: { fillColor: [37, 99, 235] }
-        });
-      }
-
-      doc.save(`Relatorio_${currentSection}.pdf`);
-    }
-
-    // ==========================================
-    // BUSCA / FILTRO EM TEMPO REAL
-    // ==========================================
-    function filtrarTabela() {
-      const termo = document.getElementById('mainSearch').value.toLowerCase();
-      document.querySelectorAll('#table-body tr').forEach(tr => {
-        tr.style.display = tr.innerText.toLowerCase().includes(termo) ? '' : 'none';
-      });
-    }
-
-    // ==========================================
-    // BACKUP E RESTAURAÇÃO DE DADOS (SEGURANÇA)
-    // ==========================================
-    function exportarBackupJSON() {
-      const jsonStr = JSON.stringify(db, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Backup_ThaynaraAutoVidros_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importarBackupJSON(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (imported.clientes && imported.estoque && imported.ordens) {
-            if (confirm("Deseja realmente restaurar este backup? Os dados atuais serão substituídos.")) {
-              db = imported;
-              saveAll();
-              renderTable();
-              updateDashboard();
-              alert("Backup restaurado com sucesso!");
-            }
-          } else {
-            alert("Arquivo de backup inválido.");
-          }
-        } catch (err) {
-          alert("Erro ao ler o arquivo JSON.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    window.onload = () => {
-      updateDashboard();
-    };
-  </script>
+  <!-- SCRIPT MODULAR -->
+  <script src="app.js"></script>
 </body>
 </html>
